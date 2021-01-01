@@ -1,0 +1,6 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:crocus"
+    - path: "./test"
+      component: "test"
