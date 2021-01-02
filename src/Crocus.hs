@@ -30,4 +30,10 @@ x = do
   fact "report" ["doug", "rick"]
   fact "report" ["doug", "tim"]
 
+  fact "report" ["pavel", "doug"]
+
+  fact "report" ["rachel", "pavel"]
+
+  fact "report" ["keith", "rachel"]
+
 -- -- rule "coworker" $ \ _X ->
