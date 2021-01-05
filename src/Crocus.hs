@@ -78,3 +78,12 @@ fact' (a:as) = B $ \ v -> v :~ K a :* fact' as
 
 choice :: [Expr] -> Expr
 choice = foldr1 (:|)
+
+class Bind a where
+  bind :: a -> Expr
+
+instance Bind a => Bind (Expr -> a) where
+  bind f = B $ bind . f
+
+instance Bind Expr where
+  bind = id
