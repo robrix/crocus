@@ -45,15 +45,15 @@ data Decl
   | Fin
 
 data Expr
-  = Expr :|: Expr
-  | Expr :*: Expr
-  | Expr :~: Expr
+  = Expr :| Expr
+  | Expr :* Expr
+  | Expr :~ Expr
   | K Constant
   | B (Expr -> Expr)
 
-infixr 5 :|:
-infixr 6 :*:
-infixr 7 :~:
+infixr 5 :|
+infixr 6 :*
+infixr 7 :~
 
 
 y = Let (choice
@@ -66,8 +66,8 @@ y = Let (choice
 
 fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
-fact' [a]    = B $ \ v -> v :~: K a
-fact' (a:as) = B $ \ v -> v :~: K a :*: fact' as
+fact' [a]    = B $ \ v -> v :~ K a
+fact' (a:as) = B $ \ v -> v :~ K a :* fact' as
 
 choice :: [Expr] -> Expr
-choice = foldr1 (:|:)
+choice = foldr1 (:|)
