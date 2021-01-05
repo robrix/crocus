@@ -3,26 +3,6 @@ module Crocus
 ( module Crocus
 ) where
 
-import Control.Carrier.NonDet.Church
-import Data.Functor.Identity
-
-type Relation = String
-
-type Constant = String
-
--- type Variable = String
-
-fact :: Relation -> [Constant] -> Program ()
-fact _ _ = Program (pure ())
-
--- rule :: Relation -> [Either Variable Constant] -> Program ()
-
--- query ::
-
-
-newtype Program a = Program (NonDetC Identity a)
-  deriving (Applicative, Functor, Monad)
-
 x = Letrec (\ _ -> choice
   [ fact' ["doug", "ayman"]
   , fact' ["doug", "beka"]
@@ -76,7 +56,7 @@ y = Letrec (\ _ -> choice
   $ \ ancestor ->
   Query $ E $ \ x -> ancestor :$ K "Alice" :$ x
 
-fact' :: [Constant] -> Expr
+fact' :: [String] -> Expr
 fact' []     = error "fact' applied to empty list"
 fact' [a]    = B $ \ v -> v :~ K a
 fact' (a:as) = B $ \ v -> v :~ K a :* fact' as
