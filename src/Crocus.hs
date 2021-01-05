@@ -42,6 +42,7 @@ x = do
 
 data Decl
   = Let Expr (Expr -> Decl)
+  | Letrec (Expr -> Expr) (Expr -> Decl)
   | Fin
 
 data Expr
@@ -64,7 +65,7 @@ y = Let (choice
   , fact' ["Charlie", "Daphne"]
   ])
   $ \ parent ->
-  Let (choice
+  Letrec (\ ancestor -> choice
     [ B $ \ _A -> B $ \ _B -> parent :$ _A :$ _B
     ])
   $ \ ancestor ->
