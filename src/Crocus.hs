@@ -64,6 +64,10 @@ y = Let (choice
   , fact' ["Charlie", "Daphne"]
   ])
   $ \ parent ->
+  Let (choice
+    [ B $ \ _A -> B $ \ _B -> parent :$ _A :$ _B
+    ])
+  $ \ ancestor ->
   Fin
 
 fact' :: [Constant] -> Expr
