@@ -55,11 +55,8 @@ infixr 6 :*:
 infixr 7 :~:
 
 
-parent = Let "parent" .
-  B $ \ _A ->
-  B $ \ _B ->
-      _A :~: K "Alice"
-  :*: _B :~: K "Bob"
+parent = Let "parent" $
+  fact' ["Alice", "Bob"]
 
 fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
