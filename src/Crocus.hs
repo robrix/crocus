@@ -23,20 +23,23 @@ fact _ _ = Program (pure ())
 newtype Program a = Program (NonDetC Identity a)
   deriving (Applicative, Functor, Monad)
 
-x = do
-  fact "report" ["doug", "ayman"]
-  fact "report" ["doug", "beka"]
-  fact "report" ["doug", "max"]
-  fact "report" ["doug", "patrick"]
-  fact "report" ["doug", "rob"]
-  fact "report" ["doug", "rick"]
-  fact "report" ["doug", "tim"]
+x = Letrec (\ _ -> choice
+  [ fact' ["doug", "ayman"]
+  , fact' ["doug", "beka"]
+  , fact' ["doug", "max"]
+  , fact' ["doug", "patrick"]
+  , fact' ["doug", "rob"]
+  , fact' ["doug", "rick"]
+  , fact' ["doug", "tim"]
 
-  fact "report" ["pavel", "doug"]
+  , fact' ["pavel", "doug"]
 
-  fact "report" ["rachel", "pavel"]
+  , fact' ["rachel", "pavel"]
 
-  fact "report" ["keith", "rachel"]
+  , fact' ["keith", "rachel"]
+  ])
+  (\ report ->
+  Query $ E $ \ x -> report :$ K "rachel" :$ x)
 
 -- -- rule "coworker" $ \ _X ->
 
