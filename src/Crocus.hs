@@ -42,7 +42,6 @@ x = do
 
 
 data Decl where
-  Let :: Expr -> (Expr -> Decl) -> Decl
   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
   Query :: Expr -> Decl
   Fin :: Decl
@@ -62,7 +61,7 @@ infixr 7 :~
 infixl 9 :$
 
 
-y = Let (choice
+y = Letrec (\ _ -> choice
   [ fact' ["Alice", "Bob"]
   , fact' ["Bob", "Charlie"]
   , fact' ["Charlie", "Daphne"]
