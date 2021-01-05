@@ -44,7 +44,6 @@ x = do
 data Decl where
   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
   Query :: Expr -> Decl
-  Fin :: Decl
 
 data Expr where
   (:|) :: Expr -> Expr -> Expr
