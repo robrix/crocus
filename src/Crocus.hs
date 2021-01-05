@@ -66,7 +66,7 @@ y = Let (choice
   ])
   $ \ parent ->
   Letrec (\ ancestor -> choice
-    [ B $ \ _A -> B $ \ _B -> parent :$ _A :$ _B
+    [ bind $ \ _A _B -> parent :$ _A :$ _B
     ])
   $ \ ancestor ->
   Fin
