@@ -1,5 +1,6 @@
 module Crocus
-() where
+( module Crocus
+) where
 
 import Control.Carrier.NonDet.Church
 import Data.Functor.Identity
