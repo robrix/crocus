@@ -55,8 +55,11 @@ infixr 6 :*:
 infixr 7 :~:
 
 
-parent = Let "parent" $
-  fact' ["Alice", "Bob"]
+parent = Let "parent" $ choice
+  [ fact' ["Alice", "Bob"]
+  , fact' ["Bob", "Charlie"]
+  , fact' ["Charlie", "Daphne"]
+  ]
 
 fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
