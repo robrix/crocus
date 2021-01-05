@@ -48,12 +48,14 @@ data Expr
   = Expr :| Expr
   | Expr :* Expr
   | Expr :~ Expr
+  | Expr :$ Expr
   | K Constant
   | B (Expr -> Expr)
 
 infixr 5 :|
 infixr 6 :*
 infixr 7 :~
+infixl 9 :$
 
 
 y = Let (choice
