@@ -1,3 +1,4 @@
+{-# LANGUAGE GADTs #-}
 module Crocus
 ( module Crocus
 ) where
@@ -40,20 +41,20 @@ x = do
 -- -- rule "coworker" $ \ _X ->
 
 
-data Decl
-  = Let Expr (Expr -> Decl)
-  | Letrec (Expr -> Expr) (Expr -> Decl)
-  | Query Expr
-  | Fin
+data Decl where
+  Let :: Expr -> (Expr -> Decl) -> Decl
+  Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
+  Query :: Expr -> Decl
+  Fin :: Decl
 
-data Expr
-  = Expr :| Expr
-  | Expr :* Expr
-  | Expr :~ Expr
-  | Expr :$ Expr
-  | K Constant
-  | B (Expr -> Expr)
-  | E (Expr -> Expr)
+data Expr where
+  (:|) :: Expr -> Expr -> Expr
+  (:*) :: Expr -> Expr -> Expr
+  (:~) :: Expr -> Expr -> Expr
+  (:$) :: Expr -> Expr -> Expr
+  K :: Constant -> Expr
+  B :: (Expr -> Expr) -> Expr
+  E :: (Expr -> Expr) -> Expr
 
 infixr 5 :|
 infixr 6 :*
