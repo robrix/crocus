@@ -53,7 +53,7 @@ data Expr where
   (:*) :: Expr -> Expr -> Expr
   (:~) :: Expr -> Expr -> Expr
   (:$) :: Expr -> Expr -> Expr
-  K :: Constant -> Expr
+  K :: String -> Expr
   B :: (Expr -> Expr) -> Expr
   E :: (Expr -> Expr) -> Expr
 
