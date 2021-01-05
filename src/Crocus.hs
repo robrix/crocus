@@ -52,6 +52,7 @@ data Expr
   | Expr :$ Expr
   | K Constant
   | B (Expr -> Expr)
+  | E (Expr -> Expr)
 
 infixr 5 :|
 infixr 6 :*
