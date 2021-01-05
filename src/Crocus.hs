@@ -68,6 +68,7 @@ y = Let (choice
   $ \ parent ->
   Letrec (\ ancestor -> choice
     [ bind $ \ a b -> parent :$ a :$ b
+    , bind $ \ a b -> E $ \ z -> parent :$ a :$ z :* ancestor :$ z :$ b
     ])
   $ \ ancestor ->
   Fin
