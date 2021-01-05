@@ -37,3 +37,25 @@ x = do
   fact "report" ["keith", "rachel"]
 
 -- -- rule "coworker" $ \ _X ->
+
+
+data Decl =
+  Let Relation Expr
+
+data Expr
+  = Expr :|: Expr
+  | Expr :*: Expr
+  | Expr :~: Expr
+  | K Constant
+  | B (Expr -> Expr)
+
+infixr 5 :|:
+infixr 6 :*:
+infixr 7 :~:
+
+
+parent = Let "parent" .
+  B $ \ _A ->
+  B $ \ _B ->
+      _A :~: K "Alice"
+  :*: _B :~: K "Bob"
