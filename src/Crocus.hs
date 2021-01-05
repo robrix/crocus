@@ -62,3 +62,6 @@ fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
 fact' [a]    = B $ \ v -> v :~: K a
 fact' (a:as) = B $ \ v -> v :~: K a :*: fact' as
+
+choice :: [Expr] -> Expr
+choice = foldr1 (:|:)
