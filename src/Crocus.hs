@@ -40,8 +40,9 @@ x = do
 -- -- rule "coworker" $ \ _X ->
 
 
-data Decl =
-  Let Relation Expr
+data Decl
+  = Let Expr (Expr -> Decl)
+  | Fin
 
 data Expr
   = Expr :|: Expr
@@ -55,11 +56,13 @@ infixr 6 :*:
 infixr 7 :~:
 
 
-parent = Let "parent" $ choice
+y = Let (choice
   [ fact' ["Alice", "Bob"]
   , fact' ["Bob", "Charlie"]
   , fact' ["Charlie", "Daphne"]
-  ]
+  ])
+  $ \ parent ->
+  Fin
 
 fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
