@@ -43,6 +43,7 @@ x = do
 data Decl
   = Let Expr (Expr -> Decl)
   | Letrec (Expr -> Expr) (Expr -> Decl)
+  | Query Expr
   | Fin
 
 data Expr
