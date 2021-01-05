@@ -4,19 +4,19 @@ module Crocus
 ) where
 
 x = Letrec (\ _ -> choice
-  [ fact' ["doug", "ayman"]
-  , fact' ["doug", "beka"]
-  , fact' ["doug", "max"]
-  , fact' ["doug", "patrick"]
-  , fact' ["doug", "rob"]
-  , fact' ["doug", "rick"]
-  , fact' ["doug", "tim"]
+  [ fact ["doug", "ayman"]
+  , fact ["doug", "beka"]
+  , fact ["doug", "max"]
+  , fact ["doug", "patrick"]
+  , fact ["doug", "rob"]
+  , fact ["doug", "rick"]
+  , fact ["doug", "tim"]
 
-  , fact' ["pavel", "doug"]
+  , fact ["pavel", "doug"]
 
-  , fact' ["rachel", "pavel"]
+  , fact ["rachel", "pavel"]
 
-  , fact' ["keith", "rachel"]
+  , fact ["keith", "rachel"]
   ])
   (\ report ->
   Query $ E $ \ x -> report :$ K "rachel" :$ x)
@@ -44,9 +44,9 @@ infixl 9 :$
 
 
 y = Letrec (\ _ -> choice
-  [ fact' ["Alice", "Bob"]
-  , fact' ["Bob", "Charlie"]
-  , fact' ["Charlie", "Daphne"]
+  [ fact ["Alice", "Bob"]
+  , fact ["Bob", "Charlie"]
+  , fact ["Charlie", "Daphne"]
   ])
   $ \ parent ->
   Letrec (\ ancestor -> choice
@@ -56,10 +56,10 @@ y = Letrec (\ _ -> choice
   $ \ ancestor ->
   Query $ E $ \ x -> ancestor :$ K "Alice" :$ x
 
-fact' :: [String] -> Expr
-fact' []     = error "fact' applied to empty list"
-fact' [a]    = B $ \ v -> v :~ K a
-fact' (a:as) = B $ \ v -> v :~ K a :* fact' as
+fact :: [String] -> Expr
+fact []     = error "fact applied to empty list"
+fact [a]    = B $ \ v -> v :~ K a
+fact (a:as) = B $ \ v -> v :~ K a :* fact as
 
 choice :: [Expr] -> Expr
 choice = foldr1 (:|)
