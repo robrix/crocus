@@ -72,7 +72,7 @@ y = Let (choice
     , bind $ \ a b -> E $ \ z -> parent :$ a :$ z :* ancestor :$ z :$ b
     ])
   $ \ ancestor ->
-  Fin
+  Query $ E $ \ x -> ancestor :$ K "Alice" :$ x
 
 fact' :: [Constant] -> Expr
 fact' []     = error "fact' applied to empty list"
