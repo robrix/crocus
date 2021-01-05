@@ -3,27 +3,6 @@ module Crocus
 ( module Crocus
 ) where
 
-x = Letrec (\ _ -> choice
-  [ fact ["doug", "ayman"]
-  , fact ["doug", "beka"]
-  , fact ["doug", "max"]
-  , fact ["doug", "patrick"]
-  , fact ["doug", "rob"]
-  , fact ["doug", "rick"]
-  , fact ["doug", "tim"]
-
-  , fact ["pavel", "doug"]
-
-  , fact ["rachel", "pavel"]
-
-  , fact ["keith", "rachel"]
-  ])
-  (\ report ->
-  Query $ E $ \ x -> report :$ K "rachel" :$ x)
-
--- -- rule "coworker" $ \ _X ->
-
-
 data Decl where
   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
   Query :: Expr -> Decl
@@ -42,6 +21,24 @@ infixr 6 :*
 infixr 7 :~
 infixl 9 :$
 
+
+x = Letrec (\ _ -> choice
+  [ fact ["doug", "ayman"]
+  , fact ["doug", "beka"]
+  , fact ["doug", "max"]
+  , fact ["doug", "patrick"]
+  , fact ["doug", "rob"]
+  , fact ["doug", "rick"]
+  , fact ["doug", "tim"]
+
+  , fact ["pavel", "doug"]
+
+  , fact ["rachel", "pavel"]
+
+  , fact ["keith", "rachel"]
+  ])
+  (\ report ->
+  Query $ E $ \ x -> report :$ K "rachel" :$ x)
 
 y = Letrec (\ _ -> choice
   [ fact ["Alice", "Bob"]
