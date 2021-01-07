@@ -62,12 +62,12 @@ data Fact = Fact RelName [Entity]
 
 -- type Rules = Map.Map RelName RelDef
 
-data Rel = MkRel RelName [VarName] Expr
+data Rel = Rel RelName [VarName] Expr
 
 
 evalStep :: [Rel] -> [Fact] -> [Fact]
 evalStep rels facts = do
-  MkRel n params body <- rels
+  Rel n params body <- rels
   u <- matchExpr facts body
   pure $ Fact n (map (substVar u) params)
 
@@ -105,7 +105,7 @@ facts = oneOf
 
 rels :: Alternative m => m Rel
 rels = oneOf
-  [ MkRel "org" ["A", "B"] (rel "report" [V "A", V "B"] \/ rel "report" [V "A", V "Z"] /\ rel "org" [V "Z", V "B"])
+  [ Rel "org" ["A", "B"] (rel "report" [V "A", V "B"] \/ rel "report" [V "A", V "Z"] /\ rel "org" [V "Z", V "B"])
   ]
 
 
