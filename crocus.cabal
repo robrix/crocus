@@ -59,5 +59,6 @@ library
     Crocus
   build-depends:
     , base ^>= 4.14.1
+    , containers
     , fused-effects ^>= 1.1.1
   hs-source-dirs:      src
