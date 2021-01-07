@@ -5,7 +5,10 @@ module Crocus
 ) where
 
 import Control.Carrier.NonDet.Church
+import Control.Monad ((<=<))
+import Data.Foldable (toList)
 import Data.List (nub)
+import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
 -- import qualified Data.Map as Map
 
@@ -19,14 +22,24 @@ data EntityExpr
   = K Entity
   | V VarName
 
-data Expr
-  = T
-  | Rel RelName [EntityExpr]
-  | Expr :\/ Expr
-  | Expr :/\ Expr
+type Expr = NonEmpty Conj
 
-infixr 6 :\/
-infixr 7 :/\
+type Conj = [Atom]
+
+data Atom = Rel RelName [EntityExpr]
+
+
+
+(\/), (/\) :: Expr -> Expr -> Expr
+e1 \/ e2 = e1 <> e2
+e1 /\ e2 = (<>) <$> e1 <*> e2
+
+infixr 6 \/
+infixr 7 /\
+
+rel :: RelName -> [EntityExpr] -> Expr
+rel n e = [Rel n e]:|[]
+
 
 
 type Env = [(VarName, Entity)]
@@ -92,7 +105,7 @@ facts = oneOf
 
 rels :: Alternative m => m Rel
 rels = oneOf
-  [ MkRel "org" ["A", "B"] (Rel "report" [V "A", V "B"] :\/ Rel "report" [V "A", V "Z"] :/\ Rel "org" [V "Z", V "B"])
+  [ MkRel "org" ["A", "B"] (rel "report" [V "A", V "B"] \/ rel "report" [V "A", V "Z"] /\ rel "org" [V "Z", V "B"])
   ]
 
 
@@ -100,29 +113,30 @@ substVar :: Env -> VarName -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
-subst env = \case
-  T       -> T
-  l :\/ r -> subst env l :\/ subst env r
-  l :/\ r -> subst env l :\/ subst env r
-  Rel n e -> Rel n (map go e)
-    where
-    go = \case
-      K a -> K a
-      V n -> maybe (V n) K (lookup n env)
+subst env = fmap (fmap (substRel env))
+
+substRel :: Env -> Atom -> Atom
+substRel env (Rel n e) = Rel n (map go e)
+  where
+  go = \case
+    K a -> K a
+    V n -> maybe (V n) K (lookup n env)
 
 matchExpr :: [Fact] -> Expr -> [Env]
-matchExpr facts = \case
-  T       -> [[]]
-  l :\/ r -> nub (matchExpr facts l <> matchExpr facts r)
-  l :/\ r -> nub $ do
-    ul <- matchExpr facts l
-    ur <- matchExpr facts (subst ul r)
-    pure $ ul <> ur
-  Rel n e -> matchRel facts n e
+matchExpr facts = nub . (matchConj facts <=< toList)
+
+matchConj :: [Fact] -> Conj -> [Env]
+matchConj facts = go where
+  go = \case
+    []  -> [[]]
+    h:t -> do
+      uh <- matchRel facts h
+      ut <- matchConj facts (substRel uh <$> t)
+      pure $ uh <> ut
   -- pattern match against db; look up n and match/produce substitution of es
 
-matchRel :: [Fact] -> RelName -> [EntityExpr] -> [Env]
-matchRel facts n e = do
+matchRel :: [Fact] -> Atom -> [Env]
+matchRel facts (Rel n e) = do
   Fact n' e' <- facts
   guard (n == n')
   maybe [] pure (go e e')
