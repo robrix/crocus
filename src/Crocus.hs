@@ -135,11 +135,11 @@ matchConj facts = go where
       pure $ uh <> ut
   -- pattern match against db; look up n and match/produce substitution of es
 
-matchPattern :: [Fact] -> Pattern -> [Env]
+matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
 matchPattern facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
-  maybe [] pure (go e e')
+  maybe empty pure (go e e')
   where
   go :: [EntityExpr] -> [Entity] -> Maybe Env
   go = curry $ \case
