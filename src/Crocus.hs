@@ -24,9 +24,9 @@ data EntityExpr
 
 type Expr = NonEmpty Conj
 
-type Conj = [Atom]
+type Conj = [Pattern]
 
-data Atom = Rel RelName [EntityExpr]
+data Pattern = Pattern RelName [EntityExpr]
 
 
 
@@ -38,7 +38,7 @@ infixr 6 \/
 infixr 7 /\
 
 rel :: RelName -> [EntityExpr] -> Expr
-rel n e = [Rel n e]:|[]
+rel n e = [Pattern n e]:|[]
 
 
 
@@ -115,8 +115,8 @@ substVar e n = fromJust $ lookup n e
 subst :: Env -> Expr -> Expr
 subst env = fmap (fmap (substRel env))
 
-substRel :: Env -> Atom -> Atom
-substRel env (Rel n e) = Rel n (map go e)
+substRel :: Env -> Pattern -> Pattern
+substRel env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
     K a -> K a
@@ -135,8 +135,8 @@ matchConj facts = go where
       pure $ uh <> ut
   -- pattern match against db; look up n and match/produce substitution of es
 
-matchRel :: [Fact] -> Atom -> [Env]
-matchRel facts (Rel n e) = do
+matchRel :: [Fact] -> Pattern -> [Env]
+matchRel facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
   maybe [] pure (go e e')
