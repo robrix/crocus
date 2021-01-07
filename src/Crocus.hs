@@ -125,10 +125,10 @@ substRel env (Pattern n e) = Pattern n (map go e)
 matchExpr :: [Fact] -> Expr -> [Env]
 matchExpr facts = nub . (matchConj facts <=< toList)
 
-matchConj :: [Fact] -> Conj -> [Env]
+matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
 matchConj facts = go where
   go = \case
-    []  -> [[]]
+    []  -> pure []
     h:t -> do
       uh <- matchPattern facts h
       ut <- matchConj facts (substRel uh <$> t)
