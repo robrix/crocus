@@ -4,7 +4,7 @@ module Crocus
 ( module Crocus
 ) where
 
-import Control.Monad (guard)
+import Control.Carrier.NonDet.Church
 import Data.List (nub)
 import Data.Maybe (fromJust)
 -- import qualified Data.Map as Map
@@ -73,7 +73,8 @@ query rels facts = matchExpr derived
   derived = eval rels facts
 
 
-facts =
+facts :: Alternative m => m Fact
+facts = oneOf
   [ Fact "report" ["doug", "ayman"]
   , Fact "report" ["doug", "beka"]
   , Fact "report" ["doug", "max"]
@@ -89,7 +90,8 @@ facts =
   , Fact "report" ["keith", "rachel"]
   ]
 
-rels =
+rels :: Alternative m => m (String, RelDef)
+rels = oneOf
   [ ("org", RelDef ["A", "B"] (Rel "report" [V "A", V "B"] :\/ Rel "report" [V "A", V "Z"] :/\ Rel "org" [V "Z", V "B"]))
   ]
 
