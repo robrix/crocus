@@ -90,7 +90,7 @@ facts = oneOf
   , Fact "report" ["keith", "rachel"]
   ]
 
-rels :: Alternative m => m (String, RelDef)
+rels :: Alternative m => m (RelName, RelDef)
 rels = oneOf
   [ ("org", RelDef ["A", "B"] (Rel "report" [V "A", V "B"] :\/ Rel "report" [V "A", V "Z"] :/\ Rel "org" [V "Z", V "B"]))
   ]
