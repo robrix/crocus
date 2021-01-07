@@ -49,16 +49,16 @@ data Fact = Fact RelName [Entity]
 
 -- type Rules = Map.Map RelName RelDef
 
-data RelDef = RelDef [VarName] Expr
+data Rel = MkRel RelName [VarName] Expr
 
 
-evalStep :: [(RelName, RelDef)] -> [Fact] -> [Fact]
+evalStep :: [Rel] -> [Fact] -> [Fact]
 evalStep rels facts = do
-  (n, RelDef params body) <- rels
+  MkRel n params body <- rels
   u <- matchExpr facts body
   pure $ Fact n (map (substVar u) params)
 
-eval :: [(RelName, RelDef)] -> [Fact] -> [Fact]
+eval :: [Rel] -> [Fact] -> [Fact]
 eval rels facts =
   let facts' = evalStep rels facts in
   if all (`elem` facts) facts' then
@@ -67,7 +67,7 @@ eval rels facts =
     eval rels (nub (facts <> facts'))
 
 
-query :: [(RelName, RelDef)] -> [Fact] -> Expr -> [Env]
+query :: [Rel] -> [Fact] -> Expr -> [Env]
 query rels facts = matchExpr derived
   where
   derived = eval rels facts
@@ -90,9 +90,9 @@ facts = oneOf
   , Fact "report" ["keith", "rachel"]
   ]
 
-rels :: Alternative m => m (RelName, RelDef)
+rels :: Alternative m => m Rel
 rels = oneOf
-  [ ("org", RelDef ["A", "B"] (Rel "report" [V "A", V "B"] :\/ Rel "report" [V "A", V "Z"] :/\ Rel "org" [V "Z", V "B"]))
+  [ MkRel "org" ["A", "B"] (Rel "report" [V "A", V "B"] :\/ Rel "report" [V "A", V "Z"] :/\ Rel "org" [V "Z", V "B"])
   ]
 
 
