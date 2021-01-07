@@ -130,13 +130,13 @@ matchConj facts = go where
   go = \case
     []  -> [[]]
     h:t -> do
-      uh <- matchRel facts h
+      uh <- matchPattern facts h
       ut <- matchConj facts (substRel uh <$> t)
       pure $ uh <> ut
   -- pattern match against db; look up n and match/produce substitution of es
 
-matchRel :: [Fact] -> Pattern -> [Env]
-matchRel facts (Pattern n e) = do
+matchPattern :: [Fact] -> Pattern -> [Env]
+matchPattern facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
   maybe [] pure (go e e')
