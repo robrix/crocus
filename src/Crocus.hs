@@ -4,10 +4,11 @@ module Crocus
 ( module Crocus
 ) where
 
-import Control.Carrier.NonDet.Church
-import Data.List (nub)
-import Data.Maybe (fromJust)
--- import qualified Data.Map as Map
+import           Control.Carrier.NonDet.Church
+import           Control.Monad (ap, liftM, (>=>))
+import           Data.List (nub)
+import           Data.Maybe (fromJust)
+import qualified Data.Set as Set
 
 type VarName = String
 
@@ -50,6 +51,32 @@ data Fact = Fact RelName [Entity]
 -- type Rules = Map.Map RelName RelDef
 
 data Rel = MkRel RelName [VarName] Expr
+
+
+data Set a where
+  Return :: a -> Set a
+  (:>>=) :: Set.Set b -> (b -> Set a) -> Set a
+
+infixl 1 :>>=
+
+instance Functor Set where
+  fmap = liftM
+
+instance Applicative Set where
+  pure = Return
+  (<*>) = ap
+
+instance Monad Set where
+  Return a   >>= k = k a
+  (s :>>= f) >>= k = s :>>= (f >=> k)
+
+liftSet :: Set.Set a -> Set a
+liftSet s = s :>>= Return
+
+lowerSet :: Ord a => Set a -> Set.Set a
+lowerSet = \case
+  Return a -> Set.singleton a
+  s :>>= f -> foldMap (lowerSet . f) s
 
 
 evalStep :: [Rel] -> [Fact] -> [Fact]
