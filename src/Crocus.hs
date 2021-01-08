@@ -21,7 +21,7 @@ data EntityExpr
   = K Entity
   | V VarName
 
-type Expr = NonEmpty Conj
+newtype Expr = Disj { disj :: NonEmpty Conj }
 
 type Conj = [Pattern]
 
@@ -29,14 +29,14 @@ data Pattern = Pattern RelName [EntityExpr]
 
 
 (\/), (/\) :: Expr -> Expr -> Expr
-e1 \/ e2 = e1 <> e2
-e1 /\ e2 = (<>) <$> e1 <*> e2
+Disj e1 \/ Disj e2 = Disj (e1 <> e2)
+Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 
 infixr 6 \/
 infixr 7 /\
 
 rel :: RelName -> [EntityExpr] -> Expr
-rel n e = [Pattern n e]:|[]
+rel n e = Disj $ [Pattern n e]:|[]
 
 
 
@@ -68,7 +68,7 @@ eval rels facts = go [] facts
 
 
 query :: [Rel] -> [Fact] -> Expr -> [Env]
-query rels facts = matchConj derived <=< toList
+query rels facts = matchConj derived <=< toList . disj
   where
   derived = eval rels facts
 
@@ -100,7 +100,7 @@ substVar :: Env -> VarName -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
-subst env = fmap (fmap (substPattern env))
+subst env = Disj . fmap (fmap (substPattern env)) . disj
 
 substPattern :: Env -> Pattern -> Pattern
 substPattern env (Pattern n e) = Pattern n (map go e)
@@ -125,7 +125,7 @@ quotient (x:xs) = go [] x xs where
 
 
 match1Disj :: [Fact] -> Expr -> [(Env, Conj)]
-match1Disj delta = match1Conj delta <=< toList
+match1Disj delta = match1Conj delta <=< toList . disj
 
 
 match1Conj :: [Fact] -> Conj -> [(Env, Conj)]
