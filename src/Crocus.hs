@@ -68,7 +68,7 @@ eval rels facts = go [] facts
 
 
 query :: [Rel] -> [Fact] -> Expr -> [Env]
-query rels facts = matchConj derived <=< toList . disj
+query rels facts = matchDisj derived
   where
   derived = eval rels facts
 
@@ -126,6 +126,9 @@ quotient (x:xs) = go [] x xs where
 
 match1Disj :: [Fact] -> Expr -> [(Env, Conj)]
 match1Disj delta = match1Conj delta <=< toList . disj
+
+matchDisj :: [Fact] -> Expr -> [Env]
+matchDisj delta = matchConj delta <=< toList . disj
 
 
 match1Conj :: [Fact] -> Conj -> [(Env, Conj)]
