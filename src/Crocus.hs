@@ -5,12 +5,11 @@ module Crocus
 ) where
 
 import Control.Carrier.NonDet.Church
-import Control.Monad (forM, (<=<))
+import Control.Monad ((<=<))
 import Data.Foldable (toList)
 import Data.List (nub)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
--- import qualified Data.Map as Map
 
 type VarName = String
 
@@ -29,7 +28,6 @@ type Conj = [Pattern]
 data Pattern = Pattern RelName [EntityExpr]
 
 
-
 (\/), (/\) :: Expr -> Expr -> Expr
 e1 \/ e2 = e1 <> e2
 e1 /\ e2 = (<>) <$> e1 <*> e2
@@ -44,33 +42,11 @@ rel n e = [Pattern n e]:|[]
 
 type Env = [(VarName, Entity)]
 
--- (|-) :: Relation Env Expr
-
-
--- tarski :: Env -> Expr -> Bool
--- tarski env = \case
-
-
--- x :- a
--- x :- b
-
--- x :- a | b
 
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-
--- type Rules = Map.Map RelName RelDef
-
 data Rel = Rel RelName [VarName] Expr
-
-
-{-
-
-1. match at least one thing against the delta (at least one pattern comes from the delta)
-2. union delta with remainder of facts
-
--}
 
 
 evalStep :: [Rel] -> [Fact] -> [Fact] -> [Fact]
@@ -139,7 +115,6 @@ matchExpr facts delta expr = nub $ do
   u' <- matchConj (facts ++ delta) (substPattern u <$> conj')
   pure $ u <> u'
 
--- matchExpr facts = nub . (matchConj facts <=< toList)
 
 quotient :: [a] -> [(a, [a])]
 quotient []     = []
@@ -167,7 +142,6 @@ matchConj facts = go where
       uh <- matchPattern facts h
       ut <- matchConj facts (substPattern uh <$> t)
       pure $ uh <> ut
-  -- pattern match against db; look up n and match/produce substitution of es
 
 matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
 matchPattern facts (Pattern n e) = do
@@ -181,19 +155,6 @@ matchPattern facts (Pattern n e) = do
     (K a:as, a':as') -> guard (a == a') *> go as as'
     (V v:as, a':as') -> ((v, a') :) <$> go as as'
     (_, _)           -> Nothing
-
-
-  -- l :/\ r -> matchExpr facts (subst (matchExpr facts l) r)
-
-
--- eval :: Expr -> [Fact] -> ([Fact] -> [Env]) -> [Env]
--- eval e db k = case e of
---   F -> []
-
-
--- P(X, Y) /\ Q(Y, Z)
-
--- P(1, 2), Q(2, 3)
 
 
 -- data Decl where
@@ -213,14 +174,6 @@ matchPattern facts (Pattern n e) = do
 -- infixr 6 :*
 -- infixr 7 :~
 -- infixl 9 :$
-
-
--- ancestor(A, B) :- parent(A, B)
--- ancestor(A, B) :- parent(A, Z), ancestor(Z, B)
-
--- ancestor :- (\ A B -> parent A B) | (\ A B -> exists $ \ Z -> parent A Z, ancestor(Z, B))
-
--- ancestor A B :- parent A B | exists …
 
 
 -- x = Letrec (\ _ -> choice
