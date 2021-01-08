@@ -160,7 +160,7 @@ matchConj facts = go where
     Conj []  -> pure []
     Conj (h:t) -> do
       uh <- matchPattern facts h
-      ut <- matchConj facts (substConj uh (Conj t))
+      ut <- go (substConj uh (Conj t))
       pure $ uh <> ut
 
 matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
