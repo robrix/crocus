@@ -116,7 +116,7 @@ substPattern env (Pattern n e) = Pattern n (map go e)
 
 matchExpr :: [Fact] -> [Fact] -> Expr -> [Env]
 matchExpr facts delta expr = nub $ do
-  (u, conj') <- match1Disj delta expr
+  (u, conj') <- matchDisj1 delta expr
   u' <- matchConj (facts ++ delta) (substConj u conj')
   pure $ u <> u'
 
@@ -129,15 +129,15 @@ quotient (x:xs) = go [] x xs where
     x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
 
 
-match1Disj :: [Fact] -> Expr -> [(Env, Conj)]
-match1Disj delta = match1Conj delta <=< toList . disj
+matchDisj1 :: [Fact] -> Expr -> [(Env, Conj)]
+matchDisj1 delta = matchConj1 delta <=< toList . disj
 
 matchDisj :: [Fact] -> Expr -> [Env]
 matchDisj delta = matchConj delta <=< toList . disj
 
 
-match1Conj :: [Fact] -> Conj -> [(Env, Conj)]
-match1Conj delta (Conj conj) = do
+matchConj1 :: [Fact] -> Conj -> [(Env, Conj)]
+matchConj1 delta (Conj conj) = do
   (p, rest) <- quotient conj
   u <- matchPattern delta p
   pure (u, Conj rest)
