@@ -206,13 +206,6 @@ instance MSplit [] where
     []  -> [Nothing]
     h:t -> [Just (h, t)]
 
-runL :: MSplit m => m a -> m [a]
-runL m = do
-  r <- msplit m
-  case r of
-    Nothing      -> pure []
-    Just (a, m') -> (a:) <$> runL m'
-
 
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
