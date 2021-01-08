@@ -7,7 +7,6 @@ module Crocus
 
 import Control.Carrier.NonDet.Church
 import Control.Monad ((<=<))
-import Data.Foldable (toList)
 import Data.List (nub)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
@@ -129,8 +128,8 @@ quotient (x:xs) = go [] x xs where
     x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
 
 
-matchDisj1 :: [Fact] -> Expr -> [(Env, Conj)]
-matchDisj1 delta = matchConj1 delta <=< toList . disj
+matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env, Conj)
+matchDisj1 delta = matchConj1 delta <=< oneOf . disj
 
 matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
 matchDisj delta = matchConj delta <=< oneOf . disj
