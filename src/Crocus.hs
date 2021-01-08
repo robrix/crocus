@@ -155,10 +155,10 @@ matchConj1 delta (Conj conj) = do
   pure (u, Conj rest)
 
 matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
-matchConj facts = go . conj where
+matchConj facts = go where
   go = \case
-    []  -> pure []
-    h:t -> do
+    Conj []  -> pure []
+    Conj (h:t) -> do
       uh <- matchPattern facts h
       ut <- matchConj facts (substConj uh (Conj t))
       pure $ uh <> ut
