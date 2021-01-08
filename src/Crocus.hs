@@ -170,6 +170,10 @@ instance Applicative B where
   L f   <*> a = f <$> a
   B l r <*> a = B (l <*> a) (r <*> a)
 
+instance Monad B where
+  E     >>= _ = E
+  L a   >>= k = k a
+  B l r >>= k = B (l >>= k) (r >>= k)
 
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
