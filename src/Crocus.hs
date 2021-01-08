@@ -113,10 +113,10 @@ substPattern env (Pattern n e) = Pattern n (map go e)
     K a -> K a
     V n -> maybe (V n) K (lookup n env)
 
-matchExpr :: [Fact] -> [Fact] -> Expr -> [Env]
-matchExpr facts delta expr = nub $ do
+matchExpr :: (Alternative m, Monad m) => m Fact -> m Fact -> Expr -> m Env
+matchExpr facts delta expr = do
   (u, conj') <- matchDisj1 delta expr
-  u' <- matchConj (facts ++ delta) (substConj u conj')
+  u' <- matchConj (facts <|> delta) (substConj u conj')
   pure $ u <> u'
 
 
