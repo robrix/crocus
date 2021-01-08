@@ -170,6 +170,10 @@ instance Applicative B where
   L f   <*> a = f <$> a
   B l r <*> a = B (l <*> a) (r <*> a)
 
+instance Alternative B where
+  empty = E
+  (<|>) = B
+
 instance Monad B where
   E     >>= _ = E
   L a   >>= k = k a
