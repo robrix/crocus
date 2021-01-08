@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 module Crocus
 ( module Crocus
@@ -23,7 +24,8 @@ data EntityExpr
 
 newtype Expr = Disj { disj :: NonEmpty Conj }
 
-type Conj = [Pattern]
+newtype Conj = Conj { conj :: [Pattern] }
+  deriving (Monoid, Semigroup)
 
 data Pattern = Pattern RelName [EntityExpr]
 
@@ -36,7 +38,7 @@ infixr 6 \/
 infixr 7 /\
 
 rel :: RelName -> [EntityExpr] -> Expr
-rel n e = Disj $ [Pattern n e]:|[]
+rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 
@@ -100,7 +102,7 @@ substVar :: Env -> VarName -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
-subst env = Disj . fmap (fmap (substPattern env)) . disj
+subst env = Disj . fmap (Conj . fmap (substPattern env) . conj) . disj
 
 substPattern :: Env -> Pattern -> Pattern
 substPattern env (Pattern n e) = Pattern n (map go e)
@@ -112,7 +114,7 @@ substPattern env (Pattern n e) = Pattern n (map go e)
 matchExpr :: [Fact] -> [Fact] -> Expr -> [Env]
 matchExpr facts delta expr = nub $ do
   (u, conj') <- match1Disj delta expr
-  u' <- matchConj (facts ++ delta) (substPattern u <$> conj')
+  u' <- matchConj (facts ++ delta) (Conj (substPattern u <$> conj conj'))
   pure $ u <> u'
 
 
@@ -132,18 +134,18 @@ matchDisj delta = matchConj delta <=< toList . disj
 
 
 match1Conj :: [Fact] -> Conj -> [(Env, Conj)]
-match1Conj delta conj = do
+match1Conj delta (Conj conj) = do
   (p, rest) <- quotient conj
   u <- matchPattern delta p
-  pure (u, rest)
+  pure (u, Conj rest)
 
 matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
-matchConj facts = go where
+matchConj facts = go . conj where
   go = \case
     []  -> pure []
     h:t -> do
       uh <- matchPattern facts h
-      ut <- matchConj facts (substPattern uh <$> t)
+      ut <- matchConj facts (Conj (substPattern uh <$> t))
       pure $ uh <> ut
 
 matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
