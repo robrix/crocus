@@ -168,7 +168,7 @@ instance Applicative B where
   pure = L
   E     <*> _ = E
   L f   <*> a = f <$> a
-  B l r <*> a = B (l <*> a) (r <*> a)
+  B l r <*> a = (l <*> a) <|> (r <*> a)
 
 instance Alternative B where
   empty = E
@@ -179,7 +179,7 @@ instance Alternative B where
 instance Monad B where
   E     >>= _ = E
   L a   >>= k = k a
-  B l r >>= k = B (l >>= k) (r >>= k)
+  B l r >>= k = (l >>= k) <|> (r >>= k)
 
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
