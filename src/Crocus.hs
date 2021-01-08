@@ -5,7 +5,7 @@ module Crocus
 ) where
 
 import Control.Carrier.NonDet.Church
-import Control.Monad ((<=<))
+import Control.Monad (forM, (<=<))
 import Data.Foldable (toList)
 import Data.List (nub)
 import Data.List.NonEmpty (NonEmpty(..))
@@ -65,23 +65,34 @@ data Fact = Fact RelName [Entity]
 data Rel = Rel RelName [VarName] Expr
 
 
-evalStep :: [Rel] -> [Fact] -> [Fact]
-evalStep rels facts = do
+{-
+
+1. match at least one thing against the delta (at least one pattern comes from the delta)
+2. union delta with remainder of facts
+
+-}
+
+
+evalStep :: [Rel] -> [Fact] -> [Fact] -> [Fact]
+evalStep rels facts delta = do
   Rel n params body <- rels
-  u <- matchExpr facts body
+  u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
 
 eval :: [Rel] -> [Fact] -> [Fact]
-eval rels facts =
-  let facts' = evalStep rels facts in
-  if all (`elem` facts) facts' then
-    facts
-  else
-    eval rels (nub (facts <> facts'))
+eval rels facts = go [] facts
+  where
+  go facts delta =
+    let facts' = nub $ facts <> delta
+        delta' = evalStep rels facts delta in
+    if all (`elem` facts') delta' then
+      facts'
+    else
+      go facts' delta'
 
 
 query :: [Rel] -> [Fact] -> Expr -> [Env]
-query rels facts = matchExpr derived
+query rels facts = matchConj derived <=< toList
   where
   derived = eval rels facts
 
@@ -113,17 +124,40 @@ substVar :: Env -> VarName -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
-subst env = fmap (fmap (substRel env))
+subst env = fmap (fmap (substPattern env))
 
-substRel :: Env -> Pattern -> Pattern
-substRel env (Pattern n e) = Pattern n (map go e)
+substPattern :: Env -> Pattern -> Pattern
+substPattern env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
     K a -> K a
     V n -> maybe (V n) K (lookup n env)
 
-matchExpr :: [Fact] -> Expr -> [Env]
-matchExpr facts = nub . (matchConj facts <=< toList)
+matchExpr :: [Fact] -> [Fact] -> Expr -> [Env]
+matchExpr facts delta expr = nub $ do
+  (u, conj') <- match1Disj delta expr
+  u' <- matchConj (facts ++ delta) (substPattern u <$> conj')
+  pure $ u <> u'
+
+-- matchExpr facts = nub . (matchConj facts <=< toList)
+
+quotient :: [a] -> [(a, [a])]
+quotient []     = []
+quotient (x:xs) = go [] x xs where
+  go accum x = \case
+    []     -> [(x, reverse accum)]
+    x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
+
+
+match1Disj :: [Fact] -> Expr -> [(Env, Conj)]
+match1Disj delta = match1Conj delta <=< toList
+
+
+match1Conj :: [Fact] -> Conj -> [(Env, Conj)]
+match1Conj delta conj = do
+  (p, rest) <- quotient conj
+  u <- matchPattern delta p
+  pure (u, rest)
 
 matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
 matchConj facts = go where
@@ -131,7 +165,7 @@ matchConj facts = go where
     []  -> pure []
     h:t -> do
       uh <- matchPattern facts h
-      ut <- matchConj facts (substRel uh <$> t)
+      ut <- matchConj facts (substPattern uh <$> t)
       pure $ uh <> ut
   -- pattern match against db; look up n and match/produce substitution of es
 
