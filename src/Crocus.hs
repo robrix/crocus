@@ -162,7 +162,7 @@ matchPattern facts (Pattern n e) = do
 
 
 data B a = E | L a | B (B a) (B a)
-  deriving (Foldable, Functor, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 
 -- data Decl where
