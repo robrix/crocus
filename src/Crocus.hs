@@ -128,18 +128,6 @@ quotient (x:xs) = go [] x xs where
     []     -> [(x, reverse accum)]
     x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
 
-quotient' :: MSplit m => m a -> m (a, m a)
-quotient' m = do
-  r <- msplit m
-  case r of
-    Nothing      -> empty
-    Just (a, as) -> go [] a as where
-      go accum a as = do
-        r <- msplit as
-        case r of
-          Nothing        -> pure (a, oneOf (reverse accum))
-          Just (a', as') -> pure (a, oneOf (reverse accum) <|> pure a' <|> as') <|> go (a:accum) a' as'
-
 
 matchDisj1 :: [Fact] -> Expr -> [(Env, Conj)]
 matchDisj1 delta = matchConj1 delta <=< toList . disj
