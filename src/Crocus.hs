@@ -148,11 +148,12 @@ matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
 matchDisj delta = matchConj delta <=< oneOf . disj
 
 
-matchConj1 :: [Fact] -> Conj -> [(Env, Conj)]
+matchConj1 :: MSplit m => m Fact -> Conj -> m (Env, Conj)
 matchConj1 delta (Conj conj) = do
-  (p, rest) <- quotient conj
+  (p, rest) <- quotient' (oneOf conj)
   u <- matchPattern delta p
-  pure (u, Conj rest)
+  rest' <- runL rest
+  pure (u, Conj rest')
 
 matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
 matchConj facts = go . conj where
