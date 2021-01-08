@@ -48,7 +48,7 @@ data Fact = Fact RelName [Entity]
 data Rel = Rel RelName [VarName] Expr
 
 
-evalStep :: [Rel] -> [Fact] -> [Fact] -> [Fact]
+evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
   u <- matchExpr facts delta body
