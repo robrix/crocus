@@ -102,7 +102,10 @@ substVar :: Env -> VarName -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
-subst env = Disj . fmap (Conj . fmap (substPattern env) . conj) . disj
+subst env = Disj . fmap (substConj env) . disj
+
+substConj :: Env -> Conj -> Conj
+substConj env = Conj . fmap (substPattern env) . conj
 
 substPattern :: Env -> Pattern -> Pattern
 substPattern env (Pattern n e) = Pattern n (map go e)
@@ -114,7 +117,7 @@ substPattern env (Pattern n e) = Pattern n (map go e)
 matchExpr :: [Fact] -> [Fact] -> Expr -> [Env]
 matchExpr facts delta expr = nub $ do
   (u, conj') <- match1Disj delta expr
-  u' <- matchConj (facts ++ delta) (Conj (substPattern u <$> conj conj'))
+  u' <- matchConj (facts ++ delta) (substConj u conj')
   pure $ u <> u'
 
 
@@ -145,7 +148,7 @@ matchConj facts = go . conj where
     []  -> pure []
     h:t -> do
       uh <- matchPattern facts h
-      ut <- matchConj facts (Conj (substPattern uh <$> t))
+      ut <- matchConj facts (substConj uh (Conj t))
       pure $ uh <> ut
 
 matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
