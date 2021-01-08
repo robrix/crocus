@@ -5,7 +5,6 @@ module Crocus
 
 import Control.Carrier.NonDet.Church
 import Control.Monad ((<=<))
-import Data.List (nub)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
 
