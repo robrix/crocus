@@ -164,6 +164,12 @@ matchPattern facts (Pattern n e) = do
 data B a = E | L a | B (B a) (B a)
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
+instance Applicative B where
+  pure = L
+  E     <*> _ = E
+  L f   <*> a = f <$> a
+  B l r <*> a = B (l <*> a) (r <*> a)
+
 
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
