@@ -162,6 +162,10 @@ matchPattern facts (Pattern n e) = do
     (_, _)           -> Nothing
 
 
+data B a = E | L a | B (B a) (B a)
+  deriving (Foldable, Functor, Traversable)
+
+
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
 --   Query :: Expr -> Decl
