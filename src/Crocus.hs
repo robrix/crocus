@@ -132,8 +132,8 @@ quotient (x:xs) = go [] x xs where
 matchDisj1 :: [Fact] -> Expr -> [(Env, Conj)]
 matchDisj1 delta = matchConj1 delta <=< toList . disj
 
-matchDisj :: [Fact] -> Expr -> [Env]
-matchDisj delta = matchConj delta <=< toList . disj
+matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
+matchDisj delta = matchConj delta <=< oneOf . disj
 
 
 matchConj1 :: [Fact] -> Conj -> [(Env, Conj)]
