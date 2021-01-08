@@ -172,7 +172,9 @@ instance Applicative B where
 
 instance Alternative B where
   empty = E
-  (<|>) = B
+  E <|> r = r
+  l <|> E = l
+  l <|> r = B l r
 
 instance Monad B where
   E     >>= _ = E
