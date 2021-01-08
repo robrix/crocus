@@ -54,11 +54,11 @@ evalStep rels facts delta = do
   u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
 
-eval :: [Rel] -> [Fact] -> [Fact]
-eval rels facts = go [] facts
+eval :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> m Fact
+eval rels facts = go empty facts
   where
   go facts delta =
-    let facts' = nub $ facts <> delta
+    let facts' = facts <|> delta
         delta' = evalStep rels facts delta in
     if all (`elem` facts') delta' then
       facts'
