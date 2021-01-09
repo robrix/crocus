@@ -185,8 +185,9 @@ fromList :: [a] -> B a
 fromList as = go (length as) as
   where
   go n = \case
-    [] -> E
-    as -> go half (take half as) <|> go (n - half) (drop half as)
+    []  -> E
+    [a] -> L a
+    as  -> go half (take half as) <|> go (n - half) (drop half as)
       where
       half = n `div` 2
 
