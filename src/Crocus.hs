@@ -60,7 +60,7 @@ eval rels facts = go empty facts
   go facts delta =
     let facts' = facts <|> delta
         delta' = evalStep rels facts delta in
-    if all (`elem` facts') delta' then
+    if null delta' then
       facts'
     else
       go facts' delta'
