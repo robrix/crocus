@@ -73,7 +73,7 @@ query rels facts = matchDisj derived
 
 
 facts :: Alternative m => m Fact
-facts = oneOf
+facts = oneOfBalanced
   [ Fact "report" ["doug", "ayman"]
   , Fact "report" ["doug", "beka"]
   , Fact "report" ["doug", "max"]
@@ -90,7 +90,7 @@ facts = oneOf
   ]
 
 rels :: Alternative m => m Rel
-rels = oneOf
+rels = oneOfBalanced
   [ Rel "org" ["A", "B"] (rel "report" [V "A", V "B"] \/ rel "report" [V "A", V "Z"] /\ rel "org" [V "Z", V "B"])
   ]
 
@@ -127,15 +127,15 @@ quotient (x:xs) = go [] x xs where
 
 
 matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env, Conj)
-matchDisj1 delta = matchConj1 delta <=< oneOf . disj
+matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
 matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
-matchDisj delta = matchConj delta <=< oneOf . disj
+matchDisj delta = matchConj delta <=< oneOfBalanced . disj
 
 
 matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env, Conj)
 matchConj1 delta (Conj conj) = do
-  (p, rest) <- oneOf $ quotient conj
+  (p, rest) <- oneOfBalanced $ quotient conj
   u <- matchPattern delta p
   pure (u, Conj rest)
 
