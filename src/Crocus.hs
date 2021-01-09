@@ -73,6 +73,8 @@ data Fact = Fact RelName [Entity]
 
 data Rel a = Rel RelName (Q a)
 
+newtype Closed f = Closed { open :: forall x . f x }
+
 data Q a
   = ForAll (a -> Q a)
   | Expr (Expr a)
