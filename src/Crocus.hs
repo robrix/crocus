@@ -198,7 +198,7 @@ matchConj1 delta (Conj conj) = do
   u <- matchPattern delta p
   pure (u, Conj rest)
 
-matchConj :: (Alternative m, Monad m) => m Fact -> Conj Var -> m (Env Var)
+matchConj :: (Alternative m, Eq a, Monad m) => m Fact -> Conj a -> m (Env a)
 matchConj facts = go where
   go = \case
     Conj []  -> pure []
