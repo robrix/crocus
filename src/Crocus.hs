@@ -192,7 +192,7 @@ matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env Var)
 matchDisj delta = matchConj delta <=< oneOfBalanced . disj
 
 
-matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj Var -> m (Env Var, Conj Var)
+matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj a -> m (Env a, Conj a)
 matchConj1 delta (Conj conj) = do
   (p, rest) <- oneOfBalanced $ quotient conj
   u <- matchPattern delta p
