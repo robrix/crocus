@@ -182,9 +182,9 @@ instance Monad B where
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
-fromList :: (Alternative m, Foldable t) => t a -> m a
+oneOfBalanced :: (Alternative m, Foldable t) => t a -> m a
 -- FIXME: is there perhaps some clever Monoid we could fold with to do this?
-fromList as = go (length as) (toList as)
+oneOfBalanced as = go (length as) (toList as)
   where
   go n = \case
     []  -> empty
