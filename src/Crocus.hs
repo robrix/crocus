@@ -41,9 +41,9 @@ incr :: Var -> Var
 incr = succ
 
 
-newtype Expr = Disj { disj :: NonEmpty Conj }
+newtype Expr = Disj { disj :: NonEmpty (Conj Var) }
 
-newtype Conj = Conj { conj :: [Pattern Var] }
+newtype Conj a = Conj { conj :: [Pattern a] }
   deriving (Monoid, Semigroup)
 
 data Pattern a = Pattern RelName [EntityExpr a]
@@ -160,7 +160,7 @@ substVar e n = val . fromJust $ find ((== n) . var) e
 subst :: Env Var -> Expr -> Expr
 subst env = Disj . fmap (substConj env) . disj
 
-substConj :: Env Var -> Conj -> Conj
+substConj :: Env Var -> Conj Var -> Conj Var
 substConj env = Conj . fmap (substPattern env) . conj
 
 substPattern :: Eq a => Env a -> Pattern a -> Pattern a
@@ -185,20 +185,20 @@ quotient (x:xs) = go [] x xs where
     x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
 
 
-matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env Var, Conj)
+matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env Var, Conj Var)
 matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
 matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env Var)
 matchDisj delta = matchConj delta <=< oneOfBalanced . disj
 
 
-matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env Var, Conj)
+matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj Var -> m (Env Var, Conj Var)
 matchConj1 delta (Conj conj) = do
   (p, rest) <- oneOfBalanced $ quotient conj
   u <- matchPattern delta p
   pure (u, Conj rest)
 
-matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env Var)
+matchConj :: (Alternative m, Monad m) => m Fact -> Conj Var -> m (Env Var)
 matchConj facts = go where
   go = \case
     Conj []  -> pure []
