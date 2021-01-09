@@ -5,6 +5,7 @@ module Crocus
 
 import Control.Carrier.NonDet.Church
 import Control.Monad ((<=<))
+import Data.Foldable (toList)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
 
@@ -181,8 +182,8 @@ instance Monad B where
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
-fromList :: Alternative m => [a] -> m a
-fromList as = go (length as) as
+fromList :: (Alternative m, Foldable t) => t a -> m a
+fromList as = go (length as) (toList as)
   where
   go n = \case
     []  -> empty
