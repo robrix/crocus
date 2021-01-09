@@ -5,7 +5,7 @@ module Crocus
 
 import Control.Carrier.NonDet.Church
 import Control.Monad ((<=<))
-import Data.Foldable (toList)
+import Data.Foldable (find, toList)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
 
@@ -53,7 +53,7 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 type Env = [Entry]
-type Entry = (Var, Entity)
+data Entry = Entry { var :: Var, val :: Entity }
 
 
 data Fact = Fact RelName [Entity]
@@ -110,7 +110,7 @@ rels = oneOfBalanced
 
 
 substVar :: Env -> Var -> Entity
-substVar e n = fromJust $ lookup n e
+substVar e n = val . fromJust $ find ((== n) . var) e
 
 subst :: Env -> Expr -> Expr
 subst env = Disj . fmap (substConj env) . disj
@@ -123,7 +123,7 @@ substPattern env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
     K a -> K a
-    V n -> maybe (V n) K (lookup n env)
+    V n -> maybe (V n) (K . val) (find ((== n) . var) env)
 
 matchExpr :: (Alternative m, Monad m) => m Fact -> m Fact -> Expr -> m Env
 matchExpr facts delta expr = do
@@ -172,7 +172,7 @@ matchPattern facts (Pattern n e) = do
   go = curry $ \case
     ([], [])         -> Just []
     (K a:as, a':as') -> guard (a == a') *> go as as'
-    (V v:as, a':as') -> ((v, a') :) <$> go as as'
+    (V v:as, a':as') -> (Entry v a' :) <$> go as as'
     (_, _)           -> Nothing
 
 
