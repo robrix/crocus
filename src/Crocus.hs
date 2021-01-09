@@ -170,7 +170,7 @@ substPattern env (Pattern n e) = Pattern n (map go e)
     K a -> K a
     V n -> maybe (V n) (K . val) (find ((== n) . var) env)
 
-matchExpr :: (Alternative m, Monad m) => m Fact -> m Fact -> Expr Var -> m (Env Var)
+matchExpr :: (Alternative m, Eq a, Monad m) => m Fact -> m Fact -> Expr a -> m (Env a)
 matchExpr facts delta expr = do
   (u, conj') <- matchDisj1 delta expr
   u' <- matchConj (facts <|> delta) (substConj u conj')
