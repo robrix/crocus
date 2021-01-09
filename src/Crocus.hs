@@ -133,6 +133,11 @@ query rels facts = matchDisj derived
   where
   derived = eval rels facts
 
+query' :: (Alternative m, Foldable m, Algebra sig m) => m Rel' -> m Fact -> Expr -> m Env
+query' rels facts = matchDisj derived
+  where
+  derived = eval' rels facts
+
 
 facts :: Alternative m => m Fact
 facts = oneOfBalanced
