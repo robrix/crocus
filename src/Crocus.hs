@@ -9,15 +9,16 @@ import Data.Foldable (toList)
 import Data.List.NonEmpty (NonEmpty(..))
 import Data.Maybe (fromJust)
 
-type VarName = String
-
 type RelName = String
 
 type Entity = String
 
 data EntityExpr
   = K Entity
-  | V VarName
+  | V Var
+
+newtype Var = Var { getVar :: Int }
+  deriving (Eq, Num, Ord, Show)
 
 newtype Expr = Disj { disj :: NonEmpty Conj }
 
@@ -39,13 +40,13 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 
-type Env = [(VarName, Entity)]
+type Env = [(Var, Entity)]
 
 
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName [VarName] Expr
+data Rel = Rel RelName [Var] Expr
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
@@ -91,11 +92,11 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ Rel "org" ["A", "B"] (rel "report" [V "A", V "B"] \/ rel "report" [V "A", V "Z"] /\ rel "org" [V "Z", V "B"])
+  [ Rel "org" [0, 1] (rel "report" [V 0, V 1] \/ rel "report" [V 0, V 2] /\ rel "org" [V 2, V 1])
   ]
 
 
-substVar :: Env -> VarName -> Entity
+substVar :: Env -> Var -> Entity
 substVar e n = fromJust $ lookup n e
 
 subst :: Env -> Expr -> Expr
