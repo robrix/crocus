@@ -61,10 +61,10 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 
-type Env = [Entry]
-data Entry = Entry { var :: Var, val :: Entity }
+type Env = [Entry Var]
+data Entry a = Entry { var :: a, val :: Entity }
 
-instance Show Entry where
+instance Show a => Show (Entry a) where
   showsPrec d (Entry var val) = showParen (d > 0) $ shows var . showString " : " . shows val
 
 
