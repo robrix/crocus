@@ -81,12 +81,12 @@ bind f = do
   local incr (f v)
 
 
-unbind :: Has (Reader Var) sig m => Q -> m ([Var], Expr)
-unbind = go []
+unbind :: Has (Reader Var) sig m => Q -> ([Var] -> Expr -> m a) -> m a
+unbind q k = go [] q
   where
   go accum = \case
     ForAll f -> bind $ \ v -> go (v:accum) (f v)
-    Expr e   -> pure (reverse accum, e)
+    Expr e   -> k (reverse accum) e
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
