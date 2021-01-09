@@ -185,6 +185,9 @@ instance Monad B where
 instance Semigroup (B a) where
   (<>) = B
 
+instance Monoid (B a) where
+  mempty = E
+
 oneOfBalanced :: (Alternative m, Foldable t) => t a -> m a
 -- FIXME: is there perhaps some clever Monoid we could fold with to do this?
 oneOfBalanced as = go (length as) (toList as)
