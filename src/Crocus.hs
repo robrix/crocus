@@ -18,7 +18,19 @@ data EntityExpr
   | V Var
 
 newtype Var = Var { getVar :: Int }
-  deriving (Eq, Num, Ord, Show)
+  deriving (Eq, Num, Ord)
+
+instance Show Var where
+  showsPrec _ (Var i) = upper i
+    where
+    upper = toAlpha ['A'..'Z']
+
+toAlpha :: String -> Int -> ShowS
+toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
+  where
+  n = length alphabet
+  (q, r) = i `divMod` n
+
 
 newtype Expr = Disj { disj :: NonEmpty Conj }
 
