@@ -70,7 +70,6 @@ data Rel = Rel RelName [Var] Expr
 
 data Q
   = ForAll (Var -> Q)
-  | Exists (Var -> Q)
   | Expr Expr
 
 runVar :: ReaderC Var m a -> m a
