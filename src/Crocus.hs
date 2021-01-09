@@ -160,7 +160,7 @@ substVar e n = val . fromJust $ find ((== n) . var) e
 subst :: Env Var -> Expr -> Expr
 subst env = Disj . fmap (substConj env) . disj
 
-substConj :: Env Var -> Conj Var -> Conj Var
+substConj :: Eq a => Env a -> Conj a -> Conj a
 substConj env = Conj . fmap (substPattern env) . conj
 
 substPattern :: Eq a => Env a -> Pattern a -> Pattern a
