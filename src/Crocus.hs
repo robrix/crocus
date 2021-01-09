@@ -207,13 +207,13 @@ matchConj facts = go where
       ut <- go (substConj uh (Conj t))
       pure $ uh <> ut
 
-matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern Var -> m (Env Var)
+matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern a -> m (Env a)
 matchPattern facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
   maybe empty pure (go e e')
   where
-  go :: [EntityExpr Var] -> [Entity] -> Maybe (Env Var)
+  go :: [EntityExpr a] -> [Entity] -> Maybe (Env a)
   go = curry $ \case
     ([], [])         -> Just []
     (K a:as, a':as') -> guard (a == a') *> go as as'
