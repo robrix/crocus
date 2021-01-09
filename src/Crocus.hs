@@ -1,3 +1,4 @@
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
 module Crocus
 ( module Crocus
@@ -143,7 +144,7 @@ rels = pure
   $ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
 
 
-class Relation r v where
+class Relation r v | r -> v where
   rhs :: r -> Q v
 
 instance Relation (Expr v) v where
