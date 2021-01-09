@@ -64,6 +64,11 @@ data Fact = Fact RelName [Entity]
 
 data Rel = Rel RelName [Var] Expr
 
+data Q
+  = ForAll (Var -> Q)
+  | Exists (Var -> Q)
+  | Expr Expr
+
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
