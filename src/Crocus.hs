@@ -14,7 +14,10 @@ import           Data.Maybe (fromJust)
 
 type RelName = String
 
-type Entity = String
+data Entity
+  = S String
+  | I Int
+  deriving (Eq, Ord, Show)
 
 data EntityExpr
   = K Entity
@@ -118,19 +121,19 @@ query rels facts = matchDisj derived
 
 facts :: Alternative m => m Fact
 facts = oneOfBalanced
-  [ Fact "report" ["doug", "ayman"]
-  , Fact "report" ["doug", "beka"]
-  , Fact "report" ["doug", "max"]
-  , Fact "report" ["doug", "patrick"]
-  , Fact "report" ["doug", "rob"]
-  , Fact "report" ["doug", "rick"]
-  , Fact "report" ["doug", "tim"]
+  [ Fact "report" [S "doug", S "ayman"]
+  , Fact "report" [S "doug", S "beka"]
+  , Fact "report" [S "doug", S "max"]
+  , Fact "report" [S "doug", S "patrick"]
+  , Fact "report" [S "doug", S "rob"]
+  , Fact "report" [S "doug", S "rick"]
+  , Fact "report" [S "doug", S "tim"]
 
-  , Fact "report" ["pavel", "doug"]
+  , Fact "report" [S "pavel", S "doug"]
 
-  , Fact "report" ["rachel", "pavel"]
+  , Fact "report" [S "rachel", S "pavel"]
 
-  , Fact "report" ["keith", "rachel"]
+  , Fact "report" [S "keith", S "rachel"]
   ]
 
 rels :: Alternative m => m Rel
