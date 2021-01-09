@@ -76,6 +76,11 @@ data Q
 runVar :: ReaderC Var m a -> m a
 runVar = runReader (Var 0)
 
+bind :: Has (Reader Var) sig m => (Var -> m a) -> m a
+bind f = do
+  v <- ask
+  local incr (f v)
+
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
