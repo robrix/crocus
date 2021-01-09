@@ -157,7 +157,7 @@ defRel n b = Rel n (rhs b)
 substVar :: Eq a => Env a -> a -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
 
-subst :: Env Var -> Expr Var -> Expr Var
+subst :: Eq a => Env a -> Expr a -> Expr a
 subst env = Disj . fmap (substConj env) . disj
 
 substConj :: Eq a => Env a -> Conj a -> Conj a
