@@ -19,9 +19,9 @@ data Entity
   | I Int
   deriving (Eq, Ord, Show)
 
-data EntityExpr
+data EntityExpr a
   = K Entity
-  | V Var
+  | V a
 
 newtype Var = Var { getVar :: Int }
   deriving (Enum, Eq, Num, Ord)
@@ -46,7 +46,7 @@ newtype Expr = Disj { disj :: NonEmpty Conj }
 newtype Conj = Conj { conj :: [Pattern] }
   deriving (Monoid, Semigroup)
 
-data Pattern = Pattern RelName [EntityExpr]
+data Pattern = Pattern RelName [EntityExpr Var]
 
 
 (\/), (/\) :: Expr -> Expr -> Expr
@@ -56,7 +56,7 @@ Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 infixr 6 \/
 infixr 7 /\
 
-rel :: RelName -> [EntityExpr] -> Expr
+rel :: RelName -> [EntityExpr Var] -> Expr
 rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
@@ -147,7 +147,7 @@ class Relation r where
 instance Relation Expr where
   rhs = Expr
 
-instance Relation r => Relation (EntityExpr -> r) where
+instance Relation r => Relation (EntityExpr Var -> r) where
   rhs f = ForAll (rhs . f . V)
 
 defRel :: Relation r => RelName -> r -> Rel
@@ -213,7 +213,7 @@ matchPattern facts (Pattern n e) = do
   guard (n == n')
   maybe empty pure (go e e')
   where
-  go :: [EntityExpr] -> [Entity] -> Maybe Env
+  go :: [EntityExpr Var] -> [Entity] -> Maybe Env
   go = curry $ \case
     ([], [])         -> Just []
     (K a:as, a':as') -> guard (a == a') *> go as as'
