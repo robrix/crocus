@@ -3,12 +3,13 @@ module Crocus
 ( module Crocus
 ) where
 
-import Control.Carrier.NonDet.Church
-import Control.Carrier.Reader
-import Control.Monad ((<=<))
-import Data.Foldable (find, toList)
-import Data.List.NonEmpty (NonEmpty(..))
-import Data.Maybe (fromJust)
+import qualified Control.Algebra as Alg
+import           Control.Carrier.NonDet.Church
+import           Control.Carrier.Reader
+import           Control.Monad ((<=<))
+import           Data.Foldable (find, toList)
+import           Data.List.NonEmpty (NonEmpty(..))
+import           Data.Maybe (fromJust)
 
 type RelName = String
 
@@ -222,6 +223,11 @@ instance Monad B where
   E     >>= _ = E
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
+
+instance Algebra NonDet B where
+  alg _ sig ctx = case sig of
+    Alg.L Empty  -> E
+    Alg.R Choose -> B (L (True <$ ctx)) (L (False <$ ctx))
 
 instance Semigroup (B a) where
   (<>) = B
