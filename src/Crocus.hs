@@ -7,6 +7,7 @@ import qualified Control.Algebra as Alg
 import           Control.Carrier.NonDet.Church
 import           Control.Carrier.Reader
 import           Control.Monad ((<=<))
+import           Control.Monad.Trans.Class
 import           Data.Foldable (find, toList)
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
@@ -68,6 +69,7 @@ data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
 data Rel = Rel RelName [Var] Expr
+data Rel' = Rel' RelName Q
 
 data Q
   = ForAll (Var -> Q)
@@ -90,11 +92,29 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
+evalStep' :: (Alternative m, Has (Reader Var) sig m) => m Rel' -> m Fact -> m Fact -> m Fact
+evalStep' rels facts delta = do
+  Rel' n q <- rels
+  unbind q $ \ params body -> do
+    u <- matchExpr facts delta body
+    pure $ Fact n (map (substVar u) params)
+
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
   u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
+
+eval' :: (Alternative m, Foldable m, Algebra sig m) => m Rel' -> m Fact -> m Fact
+eval' rels facts = go empty facts
+  where
+  go facts delta =
+    let facts' = facts <|> delta
+        delta' = runVar (evalStep' (lift rels) (lift facts) (lift delta)) in
+    if null delta' then
+      facts'
+    else
+      go facts' delta'
 
 eval :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> m Fact
 eval rels facts = go empty facts
