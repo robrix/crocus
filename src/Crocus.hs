@@ -188,7 +188,7 @@ quotient (x:xs) = go [] x xs where
 matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr Var -> m (Env Var, Conj Var)
 matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
-matchDisj :: (Alternative m, Monad m) => m Fact -> Expr Var -> m (Env Var)
+matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
 matchDisj delta = matchConj delta <=< oneOfBalanced . disj
 
 
