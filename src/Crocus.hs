@@ -181,6 +181,12 @@ instance Monad B where
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
+fromList :: [a] -> B a
+fromList [] = E
+fromList as = fromList (take half as) <|> fromList (drop half as)
+  where
+  half = length as `div` 2
+
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
 --   Query :: Expr -> Decl
