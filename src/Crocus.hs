@@ -141,16 +141,16 @@ rels = oneOfBalanced
   [ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
   ]
 
-class Relation r where
-  rhs :: r -> Q Var
+class Relation r v where
+  rhs :: r -> Q v
 
-instance Relation (Expr Var) where
+instance Relation (Expr v) v where
   rhs = Expr
 
-instance Relation r => Relation (EntityExpr Var -> r) where
+instance Relation r v => Relation (EntityExpr v -> r) v where
   rhs f = ForAll (rhs . f . V)
 
-defRel :: Relation r => RelName -> r -> Rel Var
+defRel :: Relation r v => RelName -> r -> Rel v
 defRel n b = Rel n (rhs b)
 
 
