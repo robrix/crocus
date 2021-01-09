@@ -54,6 +54,7 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 type Env = [Entry]
 data Entry = Entry { var :: Var, val :: Entity }
+  deriving (Show)
 
 
 data Fact = Fact RelName [Entity]
