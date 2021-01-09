@@ -4,6 +4,7 @@ module Crocus
 ) where
 
 import Control.Carrier.NonDet.Church
+import Control.Carrier.Reader
 import Control.Monad ((<=<))
 import Data.Foldable (find, toList)
 import Data.List.NonEmpty (NonEmpty(..))
@@ -71,6 +72,9 @@ data Q
   = ForAll (Var -> Q)
   | Exists (Var -> Q)
   | Expr Expr
+
+runVar :: ReaderC Var m a -> m a
+runVar = runReader (Var 0)
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
