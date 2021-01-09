@@ -163,7 +163,7 @@ subst env = Disj . fmap (substConj env) . disj
 substConj :: Env Var -> Conj -> Conj
 substConj env = Conj . fmap (substPattern env) . conj
 
-substPattern :: Env Var -> Pattern Var -> Pattern Var
+substPattern :: Eq a => Env a -> Pattern a -> Pattern a
 substPattern env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
