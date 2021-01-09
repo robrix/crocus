@@ -81,6 +81,14 @@ bind f = do
   local incr (f v)
 
 
+unbind :: Has (Reader Var) sig m => Q -> m ([Var], Expr)
+unbind = go []
+  where
+  go accum = \case
+    ForAll f -> bind $ \ v -> go (v:accum) (f v)
+    Expr e   -> pure (reverse accum, e)
+
+
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
