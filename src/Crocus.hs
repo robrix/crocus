@@ -163,8 +163,20 @@ rels = oneOfBalanced
 
 rels' :: Alternative m => m Rel'
 rels' = oneOfBalanced
-  [ Rel' "org" $ ForAll $ \ _A -> ForAll $ \ _B -> Expr (rel "report" [V _A, V _B] \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B])
+  [ defRel "org" $ \ _A _B -> rel "report" [V _A, V _B] \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B]
   ]
+
+class Relation r where
+  rhs :: r -> Q
+
+instance Relation Expr where
+  rhs = Expr
+
+instance Relation r => Relation (Var -> r) where
+  rhs f = ForAll (rhs . f)
+
+defRel :: Relation r => RelName -> r -> Rel'
+defRel n b = Rel' n (rhs b)
 
 
 substVar :: Env -> Var -> Entity
