@@ -54,7 +54,9 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 type Env = [Entry]
 data Entry = Entry { var :: Var, val :: Entity }
-  deriving (Show)
+
+instance Show Entry where
+  showsPrec d (Entry var val) = showParen (d > 0) $ shows var . showString " : " . shows val
 
 
 data Fact = Fact RelName [Entity]
