@@ -138,7 +138,7 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ defRel "org" $ \ _A _B -> rel "report" [V _A, V _B] \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B]
+  [ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
   ]
 
 class Relation r where
@@ -147,8 +147,8 @@ class Relation r where
 instance Relation Expr where
   rhs = Expr
 
-instance Relation r => Relation (Var -> r) where
-  rhs f = ForAll (rhs . f)
+instance Relation r => Relation (EntityExpr -> r) where
+  rhs f = ForAll (rhs . f . V)
 
 defRel :: Relation r => RelName -> r -> Rel
 defRel n b = Rel n (rhs b)
