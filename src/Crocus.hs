@@ -52,7 +52,8 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 
-type Env = [(Var, Entity)]
+type Env = [Entry]
+type Entry = (Var, Entity)
 
 
 data Fact = Fact RelName [Entity]
