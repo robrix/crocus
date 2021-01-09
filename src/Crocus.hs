@@ -71,11 +71,11 @@ instance Show a => Show (Entry a) where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName Q
+data Rel = Rel RelName (Q Var)
 
-data Q
-  = ForAll (Var -> Q)
-  | Expr (Expr Var)
+data Q a
+  = ForAll (a -> Q a)
+  | Expr (Expr a)
 
 runVar :: ReaderC Var m a -> m a
 runVar = runReader (Var 0)
@@ -86,7 +86,7 @@ bind f = do
   local incr (f v)
 
 
-unbind :: Has (Reader Var) sig m => Q -> ([Var] -> Expr Var -> m a) -> m a
+unbind :: Has (Reader Var) sig m => Q Var -> ([Var] -> Expr Var -> m a) -> m a
 unbind q k = go [] q
   where
   go accum = \case
@@ -142,7 +142,7 @@ rels = oneOfBalanced
   ]
 
 class Relation r where
-  rhs :: r -> Q
+  rhs :: r -> Q Var
 
 instance Relation (Expr Var) where
   rhs = Expr
