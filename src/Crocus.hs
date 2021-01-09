@@ -68,8 +68,7 @@ instance Show Entry where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName [Var] Expr
-data Rel' = Rel' RelName Q
+data Rel = Rel RelName Q
 
 data Q
   = ForAll (Var -> Q)
@@ -92,51 +91,29 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep' :: (Alternative m, Has (Reader Var) sig m) => m Rel' -> m Fact -> m Fact -> m Fact
-evalStep' rels facts delta = do
-  Rel' n q <- rels
+evalStep :: (Alternative m, Has (Reader Var) sig m) => m Rel -> m Fact -> m Fact -> m Fact
+evalStep rels facts delta = do
+  Rel n q <- rels
   unbind q $ \ params body -> do
     u <- matchExpr facts delta body
     pure $ Fact n (map (substVar u) params)
 
-evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
-evalStep rels facts delta = do
-  Rel n params body <- rels
-  u <- matchExpr facts delta body
-  pure $ Fact n (map (substVar u) params)
-
-eval' :: (Alternative m, Foldable m, Algebra sig m) => m Rel' -> m Fact -> m Fact
-eval' rels facts = go empty facts
-  where
-  go facts delta =
-    let facts' = facts <|> delta
-        delta' = runVar (evalStep' (lift rels) (lift facts) (lift delta)) in
-    if null delta' then
-      facts'
-    else
-      go facts' delta'
-
-eval :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> m Fact
+eval :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
     let facts' = facts <|> delta
-        delta' = evalStep rels facts delta in
+        delta' = runVar (evalStep (lift rels) (lift facts) (lift delta)) in
     if null delta' then
       facts'
     else
       go facts' delta'
 
 
-query :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> Expr -> m Env
+query :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr -> m Env
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
-
-query' :: (Alternative m, Foldable m, Algebra sig m) => m Rel' -> m Fact -> Expr -> m Env
-query' rels facts = matchDisj derived
-  where
-  derived = eval' rels facts
 
 
 facts :: Alternative m => m Fact
@@ -158,11 +135,6 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ Rel "org" [0, 1] (rel "report" [V 0, V 1] \/ rel "report" [V 0, V 2] /\ rel "org" [V 2, V 1])
-  ]
-
-rels' :: Alternative m => m Rel'
-rels' = oneOfBalanced
   [ defRel "org" $ \ _A _B -> rel "report" [V _A, V _B] \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B]
   ]
 
@@ -175,8 +147,8 @@ instance Relation Expr where
 instance Relation r => Relation (Var -> r) where
   rhs f = ForAll (rhs . f)
 
-defRel :: Relation r => RelName -> r -> Rel'
-defRel n b = Rel' n (rhs b)
+defRel :: Relation r => RelName -> r -> Rel
+defRel n b = Rel n (rhs b)
 
 
 substVar :: Env -> Var -> Entity
