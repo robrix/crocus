@@ -154,7 +154,7 @@ defRel :: Relation r => RelName -> r -> Rel
 defRel n b = Rel n (rhs b)
 
 
-substVar :: Env Var -> Var -> Entity
+substVar :: Eq a => Env a -> a -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
 
 subst :: Env Var -> Expr -> Expr
