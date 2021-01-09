@@ -161,6 +161,11 @@ rels = oneOfBalanced
   [ Rel "org" [0, 1] (rel "report" [V 0, V 1] \/ rel "report" [V 0, V 2] /\ rel "org" [V 2, V 1])
   ]
 
+rels' :: Alternative m => m Rel'
+rels' = oneOfBalanced
+  [ Rel' "org" $ ForAll $ \ _A -> ForAll $ \ _B -> Expr (rel "report" [V _A, V _B] \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B])
+  ]
+
 
 substVar :: Env -> Var -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
