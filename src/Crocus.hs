@@ -181,12 +181,12 @@ instance Monad B where
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
-fromList :: [a] -> B a
+fromList :: Alternative m => [a] -> m a
 fromList as = go (length as) as
   where
   go n = \case
-    []  -> E
-    [a] -> L a
+    []  -> empty
+    [a] -> pure a
     as  -> go half (take half as) <|> go (n - half) (drop half as)
       where
       half = n `div` 2
