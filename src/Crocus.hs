@@ -136,10 +136,10 @@ facts = oneOfBalanced
   , Fact "report" [S "keith", S "rachel"]
   ]
 
-rels :: Alternative m => m (Rel Var)
-rels = oneOfBalanced
-  [ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
-  ]
+rels :: Applicative m => m (Rel Var)
+rels = pure
+  $ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
+
 
 class Relation r v where
   rhs :: r -> Q v
