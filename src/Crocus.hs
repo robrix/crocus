@@ -182,6 +182,9 @@ instance Monad B where
   L a   >>= k = k a
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
+instance Semigroup (B a) where
+  (<>) = B
+
 oneOfBalanced :: (Alternative m, Foldable t) => t a -> m a
 -- FIXME: is there perhaps some clever Monoid we could fold with to do this?
 oneOfBalanced as = go (length as) (toList as)
