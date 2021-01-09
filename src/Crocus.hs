@@ -43,10 +43,10 @@ incr = succ
 
 newtype Expr = Disj { disj :: NonEmpty Conj }
 
-newtype Conj = Conj { conj :: [Pattern] }
+newtype Conj = Conj { conj :: [Pattern Var] }
   deriving (Monoid, Semigroup)
 
-data Pattern = Pattern RelName [EntityExpr Var]
+data Pattern a = Pattern RelName [EntityExpr a]
 
 
 (\/), (/\) :: Expr -> Expr -> Expr
@@ -163,7 +163,7 @@ subst env = Disj . fmap (substConj env) . disj
 substConj :: Env -> Conj -> Conj
 substConj env = Conj . fmap (substPattern env) . conj
 
-substPattern :: Env -> Pattern -> Pattern
+substPattern :: Env -> Pattern Var -> Pattern Var
 substPattern env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
@@ -207,7 +207,7 @@ matchConj facts = go where
       ut <- go (substConj uh (Conj t))
       pure $ uh <> ut
 
-matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
+matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern Var -> m Env
 matchPattern facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
