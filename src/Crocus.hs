@@ -57,7 +57,7 @@ Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 infixr 6 \/
 infixr 7 /\
 
-rel :: RelName -> [EntityExpr Var] -> Expr Var
+rel :: RelName -> [EntityExpr a] -> Expr a
 rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
