@@ -182,10 +182,13 @@ instance Monad B where
   B l r >>= k = (l >>= k) <|> (r >>= k)
 
 fromList :: [a] -> B a
-fromList [] = E
-fromList as = fromList (take half as) <|> fromList (drop half as)
+fromList as = go (length as) as
   where
-  half = length as `div` 2
+  go n = \case
+    [] -> E
+    as -> go half (take half as) <|> go (n - half) (drop half as)
+      where
+      half = n `div` 2
 
 -- data Decl where
 --   Letrec :: (Expr -> Expr) -> (Expr -> Decl) -> Decl
