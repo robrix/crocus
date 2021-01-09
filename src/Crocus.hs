@@ -71,7 +71,7 @@ instance Show a => Show (Entry a) where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName (Q Var)
+data Rel a = Rel RelName (Q a)
 
 data Q a
   = ForAll (a -> Q a)
@@ -94,14 +94,14 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep :: (Alternative m, Has (Reader Var) sig m) => m Rel -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative m, Has (Reader Var) sig m) => m (Rel Var) -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n q <- rels
   unbind q $ \ params body -> do
     u <- matchExpr facts delta body
     pure $ Fact n (map (substVar u) params)
 
-eval :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> m Fact
+eval :: (Alternative m, Foldable m, Algebra sig m) => m (Rel Var) -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
@@ -113,7 +113,7 @@ eval rels facts = go empty facts
       go facts' delta'
 
 
-query :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr Var -> m (Env Var)
+query :: (Alternative m, Foldable m, Algebra sig m) => m (Rel Var) -> m Fact -> Expr Var -> m (Env Var)
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
@@ -136,7 +136,7 @@ facts = oneOfBalanced
   , Fact "report" [S "keith", S "rachel"]
   ]
 
-rels :: Alternative m => m Rel
+rels :: Alternative m => m (Rel Var)
 rels = oneOfBalanced
   [ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
   ]
@@ -150,7 +150,7 @@ instance Relation (Expr Var) where
 instance Relation r => Relation (EntityExpr Var -> r) where
   rhs f = ForAll (rhs . f . V)
 
-defRel :: Relation r => RelName -> r -> Rel
+defRel :: Relation r => RelName -> r -> Rel Var
 defRel n b = Rel n (rhs b)
 
 
