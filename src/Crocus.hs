@@ -50,8 +50,9 @@ newtype Conj a = Conj { conj :: [Pattern a] }
 data Pattern a = Pattern RelName [EntityExpr a]
 
 
-(\/), (/\) :: Expr a -> Expr a -> Expr a
+(\/) :: Expr a -> Expr a -> Expr a
 Disj e1 \/ Disj e2 = Disj (e1 <> e2)
+(/\) :: Expr a -> Expr a -> Expr a
 Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 
 infixr 6 \/
