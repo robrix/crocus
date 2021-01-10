@@ -371,6 +371,10 @@ oneOfBalanced as = go (length as) (toList as)
 data Scope var m a where
   Bind :: (var -> m a) -> Scope var m a
 
+
+runScope :: var -> ScopeC var m a -> m a
+runScope v = runReader v . runScopeC
+
 newtype ScopeC var m a = ScopeC { runScopeC :: ReaderC var m a }
   deriving (Alternative, Applicative, Functor, Monad, MonadTrans)
 
