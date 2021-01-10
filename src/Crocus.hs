@@ -218,6 +218,12 @@ matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
 matchDisj facts = matchConj facts <=< oneOfBalanced . disj
 
 
+matchExists1 :: (Alternative m, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a, Exists a)
+matchExists1 delta = go where
+  go = \case
+    Body c   -> fmap Body <$> matchConj1 delta c
+    Exists f -> bind (go . f) -- FIXME: this needs to reconstruct the binder!
+
 matchExists :: (Alternative m, Eq a, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a)
 matchExists facts = go where
   go = \case
