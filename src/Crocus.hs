@@ -157,21 +157,21 @@ facts = oneOfBalanced
   , Fact "report" [S "keith", S "rachel"]
   ]
 
-rels :: Applicative m => m (Rel Var)
+rels :: Has (Scope Var) sig m => m (Rel Var)
 rels = defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
 
 
-class Relation r v | r -> v where
-  rhs :: r -> Q v
+class Relation m r v | r -> v where
+  rhs :: r -> m (Expr v)
 
-instance Relation (Expr v) v where
-  rhs = Expr
+instance Applicative m => Relation m (Expr v) v where
+  rhs = pure
 
-instance Relation r v => Relation (EntityExpr v -> r) v where
-  rhs f = ForAll (rhs . f . V)
+instance (Has (Scope v) sig m, Relation m r v) => Relation m (EntityExpr v -> r) v where
+  rhs f = bind (rhs . f . V)
 
-defRel :: (Applicative m, Relation r v) => RelName -> r -> m (Rel v)
-defRel n b = pure $ Rel n (rhs b)
+defRel :: (Applicative m, Relation m r v) => RelName -> r -> m (Rel v)
+defRel n b = Rel n . Expr <$> rhs b
 
 
 substVar :: Eq a => Env a -> a -> Entity
