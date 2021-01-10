@@ -106,9 +106,6 @@ data Q a
   = ForAll (a -> Q a)
   | Expr (Expr a)
 
-runVar :: ScopeC Var m a -> m a
-runVar = runScope (Var 0)
-
 
 unbind :: Has (Scope var) sig m => Q var -> ([var] -> Expr var -> m a) -> m a
 unbind q k = go [] q
