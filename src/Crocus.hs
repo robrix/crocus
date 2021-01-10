@@ -44,6 +44,10 @@ incr = succ
 
 newtype Expr a = Disj { disj :: NonEmpty (Conj a) }
 
+data Exists a
+  = Exists (a -> Exists a)
+  | Body (Conj a)
+
 newtype Conj a = Conj { conj :: [Pattern a] }
   deriving (Monoid, Semigroup)
 
