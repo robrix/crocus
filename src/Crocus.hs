@@ -81,6 +81,9 @@ instance Pat (Conj a) a where
 instance Pat (Expr a) a where
   rel n e = Disj $ rel n e:|[]
 
+exists :: (EntityExpr a -> Exists a) -> Exists a
+exists f = Exists (f . V)
+
 
 type Env a = [Entry a]
 data Entry a = Entry { var :: a, val :: Entity }
