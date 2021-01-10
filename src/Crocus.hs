@@ -125,12 +125,12 @@ evalStep rels facts delta = do
     u <- matchExpr facts delta body
     pure $ Fact n (map (substVar u) params)
 
-eval :: (Alternative m, Foldable m, Algebra sig m) => m (Rel Var) -> m Fact -> m Fact
+eval :: forall var m sig . (Alternative m, Enum var, Eq var, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
     let facts' = facts <|> delta
-        delta' = runVar (evalStep (lift rels) (lift facts) (lift delta)) in
+        delta' = runScope (toEnum 0 :: var) (evalStep (lift rels) (lift facts) (lift delta)) in
     if null delta' then
       facts'
     else
