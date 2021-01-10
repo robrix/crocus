@@ -215,7 +215,7 @@ matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr a -> m (Env a, Conj a)
 matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
 matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
-matchDisj delta = matchConj delta <=< oneOfBalanced . disj
+matchDisj facts = matchConj facts <=< oneOfBalanced . disj
 
 
 matchExists :: (Alternative m, Eq a, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a)
