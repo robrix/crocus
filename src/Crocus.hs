@@ -1,5 +1,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Crocus
 ( module Crocus
 ) where
@@ -368,3 +370,13 @@ oneOfBalanced as = go (length as) (toList as)
 
 data Scope var m a where
   Bind :: (var -> m a) -> Scope var m a
+
+newtype ScopeC var m a = ScopeC { runScopeC :: ReaderC var m a }
+  deriving (Alternative, Applicative, Functor, Monad, MonadTrans)
+
+instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC var m) where
+  alg hdl sig ctx = case sig of
+    Alg.L (Bind f) -> do
+      v <- ScopeC ask
+      ScopeC (local succ (runScopeC (hdl (f v <$ ctx))))
+    Alg.R other    -> ScopeC (Alg.alg (runScopeC . hdl) (Alg.R other) ctx)
