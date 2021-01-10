@@ -68,7 +68,7 @@ instance Pat (Conj a) a where
   rel n e = Conj [rel n e]
 
 instance Pat (Expr a) a where
-  rel n e = Disj $ Conj [Pattern n e]:|[]
+  rel n e = Disj $ rel n e:|[]
 
 
 type Env a = [Entry a]
