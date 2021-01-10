@@ -110,7 +110,7 @@ runVar :: ScopeC Var m a -> m a
 runVar = runScope (Var 0)
 
 
-unbind :: Has (Scope Var) sig m => Q Var -> ([Var] -> Expr Var -> m a) -> m a
+unbind :: Has (Scope var) sig m => Q var -> ([var] -> Expr var -> m a) -> m a
 unbind q k = go [] q
   where
   go accum = \case
