@@ -158,8 +158,7 @@ facts = oneOfBalanced
   ]
 
 rels :: Applicative m => m (Rel Var)
-rels = pure
-  $ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
+rels = defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
 
 
 class Relation r v | r -> v where
@@ -171,8 +170,8 @@ instance Relation (Expr v) v where
 instance Relation r v => Relation (EntityExpr v -> r) v where
   rhs f = ForAll (rhs . f . V)
 
-defRel :: Relation r v => RelName -> r -> Rel v
-defRel n b = Rel n (rhs b)
+defRel :: (Applicative m, Relation r v) => RelName -> r -> m (Rel v)
+defRel n b = pure $ Rel n (rhs b)
 
 
 substVar :: Eq a => Env a -> a -> Entity
