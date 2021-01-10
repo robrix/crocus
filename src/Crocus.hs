@@ -118,7 +118,7 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep :: (Alternative m, Has (Scope Var) sig m) => m (Rel Var) -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative m, Eq var, Has (Scope var) sig m) => m (Rel var) -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n q <- rels
   unbind q $ \ params body -> do
