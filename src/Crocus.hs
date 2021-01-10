@@ -364,3 +364,7 @@ oneOfBalanced as = go (length as) (toList as)
 
 -- q1 = Query $ K "a"
 -- v1 = ["a"]
+
+
+data Scope var m a where
+  Bind :: (var -> m a) -> Scope var m a
