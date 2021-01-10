@@ -48,6 +48,12 @@ data Exists a
   = Exists (a -> Exists a)
   | Body (Conj a)
 
+instance Semigroup (Exists a) where
+  Body a   <> Body b   = Body (a <> b)
+  Exists f <> Exists g = Exists (\ v -> f v <> g v)
+  Exists f <> b        = Exists (\ v -> f v <> b)
+  a        <> Exists g = Exists (\ v -> a   <> g v)
+
 newtype Conj a = Conj { conj :: [Pattern a] }
   deriving (Monoid, Semigroup)
 
