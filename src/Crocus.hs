@@ -61,6 +61,9 @@ infixr 7 /\
 class Pat a v | a -> v where
   rel :: RelName -> [EntityExpr v] -> a
 
+instance Pat (Pattern a) a where
+  rel = Pattern
+
 instance Pat (Expr a) a where
   rel n e = Disj $ Conj [Pattern n e]:|[]
 
