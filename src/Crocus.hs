@@ -218,6 +218,13 @@ matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
 matchDisj delta = matchConj delta <=< oneOfBalanced . disj
 
 
+matchExists :: (Alternative m, Eq a, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a)
+matchExists facts = go where
+  go = \case
+    Body c   -> matchConj facts c
+    Exists f -> bind (go . f)
+
+
 matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj a -> m (Env a, Conj a)
 matchConj1 delta (Conj conj) = do
   (p, rest) <- oneOfBalanced $ quotient conj
