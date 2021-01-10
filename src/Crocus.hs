@@ -1,5 +1,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Crocus
@@ -382,5 +383,5 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
   alg hdl sig ctx = case sig of
     Alg.L (Bind f) -> do
       v <- ScopeC ask
-      ScopeC (local succ (runScopeC (hdl (f v <$ ctx))))
+      ScopeC (local (succ @var) (runScopeC (hdl (f v <$ ctx))))
     Alg.R other    -> ScopeC (Alg.alg (runScopeC . hdl) (Alg.R other) ctx)
