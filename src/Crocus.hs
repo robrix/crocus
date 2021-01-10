@@ -106,16 +106,11 @@ data Q a
   = ForAll (a -> Q a)
   | Expr (Expr a)
 
-runVar :: ReaderC Var m a -> m a
-runVar = runReader (Var 0)
-
-bind :: Has (Reader Var) sig m => (Var -> m a) -> m a
-bind f = do
-  v <- ask
-  local incr (f v)
+runVar :: ScopeC Var m a -> m a
+runVar = runScope (Var 0)
 
 
-unbind :: Has (Reader Var) sig m => Q Var -> ([Var] -> Expr Var -> m a) -> m a
+unbind :: Has (Scope Var) sig m => Q Var -> ([Var] -> Expr Var -> m a) -> m a
 unbind q k = go [] q
   where
   go accum = \case
@@ -123,7 +118,7 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep :: (Alternative m, Has (Reader Var) sig m) => m (Rel Var) -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative m, Has (Scope Var) sig m) => m (Rel Var) -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n q <- rels
   unbind q $ \ params body -> do
@@ -368,6 +363,9 @@ oneOfBalanced as = go (length as) (toList as)
 -- q1 = Query $ K "a"
 -- v1 = ["a"]
 
+
+bind :: Has (Scope var) sig m => (var -> m a) -> m a
+bind f = Alg.send (Bind f)
 
 data Scope var m a where
   Bind :: (var -> m a) -> Scope var m a
