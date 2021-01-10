@@ -57,9 +57,12 @@ Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 infixr 6 \/
 infixr 7 /\
 
-rel :: RelName -> [EntityExpr a] -> Expr a
-rel n e = Disj $ Conj [Pattern n e]:|[]
 
+class Pat a v | a -> v where
+  rel :: RelName -> [EntityExpr v] -> a
+
+instance Pat (Expr a) a where
+  rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 type Env a = [Entry a]
