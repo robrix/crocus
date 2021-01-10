@@ -186,6 +186,11 @@ substVar e n = val . fromJust $ find ((== n) . var) e
 subst :: Eq a => Env a -> Expr a -> Expr a
 subst env = Disj . fmap (substConj env) . disj
 
+substExists :: Eq a => Env a -> Exists a -> Exists a
+substExists env = \case
+  Body c   -> Body (substConj env c)
+  Exists f -> Exists (substExists env . f)
+
 substConj :: Eq a => Env a -> Conj a -> Conj a
 substConj env = Conj . fmap (substPattern env) . conj
 
