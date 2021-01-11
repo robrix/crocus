@@ -13,6 +13,7 @@ import           Control.Carrier.Reader
 import           Control.Monad ((<=<))
 import           Control.Monad.Trans.Class
 import           Data.Foldable (find, toList)
+import           Data.Functor.Identity
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
 
@@ -392,3 +393,7 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
       v <- ScopeC ask
       ScopeC (local (succ @var) (runScopeC (hdl (f v <$ ctx))))
     Alg.R other    -> ScopeC (Alg.alg (runScopeC . hdl) (Alg.R other) ctx)
+
+
+runCrocus :: ScopeC Var Identity (B a) -> B a
+runCrocus = run . runScope 0
