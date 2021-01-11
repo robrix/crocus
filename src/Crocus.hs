@@ -26,11 +26,11 @@ data EntityExpr a
   = K Entity
   | V a
 
-newtype U = U { getVar :: Word32 }
+newtype Var = Var { getVar :: Word32 }
   deriving (Bounded, Enum, Eq, Num, Ord)
 
-instance Show U where
-  showsPrec _ (U i) = upper (fromIntegral i)
+instance Show Var where
+  showsPrec _ (Var i) = upper (fromIntegral i)
     where
     upper = toAlpha ['A'..'Z']
 
@@ -40,7 +40,7 @@ toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
   n = length alphabet
   (q, r) = i `divMod` n
 
-incr :: U -> U
+incr :: Var -> Var
 incr = succ
 
 
@@ -97,7 +97,7 @@ instance Show a => Show (Entry a) where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName [U] (Expr U)
+data Rel = Rel RelName [Var] (Expr Var)
 
 newtype Closed f = Closed { open :: forall x . f x }
 
@@ -324,7 +324,7 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
     Alg.R other    -> Alg.alg (runScopeC . hdl) (Alg.R other) ctx
 
 
-runCrocus :: ScopeC U Identity a -> a
+runCrocus :: ScopeC Var Identity a -> a
 runCrocus = run . runScope minBound
 
 
