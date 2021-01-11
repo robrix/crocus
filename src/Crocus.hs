@@ -20,9 +20,7 @@ import           Data.Word
 
 type RelName = String
 
-data Entity
-  = S String
-  | I Int
+newtype Entity = S String
   deriving (Eq, Ord, Show)
 
 data EntityExpr a
