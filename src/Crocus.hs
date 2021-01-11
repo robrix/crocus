@@ -26,7 +26,7 @@ data EntityExpr a
   | V a
 
 newtype Var = Var Word32
-  deriving (Bounded, Enum, Eq, Num, Ord)
+  deriving (Enum, Eq, Num, Ord)
 
 instance Show Var where
   showsPrec _ (Var i) = upper (fromIntegral i)
