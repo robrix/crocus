@@ -100,7 +100,7 @@ instance Show a => Show (Entry a) where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel a = Rel RelName [a] (Expr a)
+data Rel = Rel RelName [Var] (Expr Var)
 
 newtype Closed f = Closed { open :: forall x . f x }
 
@@ -117,13 +117,13 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep :: (Alternative m, Eq var, Monad m) => m (Rel var) -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
   u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
 
-eval :: forall var m sig . (Alternative m, Eq var, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> m Fact
+eval :: forall m sig . (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
@@ -135,7 +135,7 @@ eval rels facts = go empty facts
       go facts' delta'
 
 
-query :: (Eq var, Alternative m, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> Expr var -> m (Env var)
+query :: (Eq var, Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr var -> m (Env var)
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
@@ -158,7 +158,7 @@ facts = oneOfBalanced
   , Fact "report" [S "keith", S "rachel"]
   ]
 
-rels :: Alternative m => m (Rel Var)
+rels :: Alternative m => m Rel
 rels = oneOfBalanced
   [ let _A = 0 ; _B = 1 in Rel "org" [_A, _B]
     $  rel "report" [V _A, V _B]
