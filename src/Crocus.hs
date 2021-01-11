@@ -13,7 +13,6 @@ import           Control.Carrier.Reader
 import           Control.Monad ((<=<))
 import           Control.Monad.Trans.Class
 import           Data.Foldable (find, toList)
-import           Data.Functor.Identity
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
 import           Data.Word
@@ -322,10 +321,6 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
       v <- ask
       local (succ @var) (runScopeC (hdl (f v <$ ctx)))
     Alg.R other    -> Alg.alg (runScopeC . hdl) (Alg.R other) ctx
-
-
-runCrocus :: ScopeC Var Identity a -> a
-runCrocus = run . runScope minBound
 
 
 -- x = do
