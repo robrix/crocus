@@ -159,7 +159,7 @@ facts = oneOfBalanced
   , Fact "report" [S "keith", S "rachel"]
   ]
 
-rels :: Has (Scope Var) sig m => m (Rel Var)
+rels :: Applicative m => m (Rel Var)
 rels = pure
   $ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
 
