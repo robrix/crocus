@@ -399,3 +399,20 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
 
 runCrocus :: ScopeC Var Identity a -> a
 runCrocus = run . runScope minBound
+
+
+-- x = do
+--   parent <- _fact "parent" $ \ parent ->
+--     [ parent "Alice" "Beth"
+--     , parent "Alice" "Bob"
+--     , parent "Andy" "Beth"
+--     , parent "Andy" "Bob"
+--     ]
+
+--   ancestor <- _rel "ancestor" $ \ ancestor ->
+--     \ a b -> parent a b `_disj` _exists (\ z -> parent a z `_conj` ancestor z b)
+
+--   sibling <- _rel "sibling" $ \ sibling ->
+--     \ a b -> _exists $ \ p -> parent p a `_conj` parent p b
+
+--   _
