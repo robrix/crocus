@@ -164,6 +164,8 @@ rels = oneOfBalanced
   [ defRel "org" $ \ _A _B
     -> rel "report" [_A, _B]
     \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
+  , defRel "teammate" $ \ _A _B
+    -> rel "report" [V 2, _A] /\ rel "report" [V 2, _B]
   ]
 
 
