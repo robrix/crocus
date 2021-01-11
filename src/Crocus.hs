@@ -397,5 +397,5 @@ instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC va
     Alg.R other    -> Alg.alg (runScopeC . hdl) (Alg.R other) ctx
 
 
-runCrocus :: ScopeC Var Identity (B a) -> B a
+runCrocus :: ScopeC Var Identity a -> a
 runCrocus = run . runScope minBound
