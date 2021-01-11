@@ -20,8 +20,7 @@ import           Data.Word
 
 type RelName = String
 
-newtype Entity = S String
-  deriving (Eq, Ord, Show)
+type Entity = String
 
 data EntityExpr a
   = K Entity
@@ -141,19 +140,19 @@ query rels facts = matchDisj derived
 
 facts :: Alternative m => m Fact
 facts = oneOfBalanced
-  [ Fact "report" [S "doug", S "ayman"]
-  , Fact "report" [S "doug", S "beka"]
-  , Fact "report" [S "doug", S "max"]
-  , Fact "report" [S "doug", S "patrick"]
-  , Fact "report" [S "doug", S "rob"]
-  , Fact "report" [S "doug", S "rick"]
-  , Fact "report" [S "doug", S "tim"]
+  [ Fact "report" ["doug", "ayman"]
+  , Fact "report" ["doug", "beka"]
+  , Fact "report" ["doug", "max"]
+  , Fact "report" ["doug", "patrick"]
+  , Fact "report" ["doug", "rob"]
+  , Fact "report" ["doug", "rick"]
+  , Fact "report" ["doug", "tim"]
 
-  , Fact "report" [S "pavel", S "doug"]
+  , Fact "report" ["pavel", "doug"]
 
-  , Fact "report" [S "rachel", S "pavel"]
+  , Fact "report" ["rachel", "pavel"]
 
-  , Fact "report" [S "keith", S "rachel"]
+  , Fact "report" ["keith", "rachel"]
   ]
 
 rels :: Alternative m => m Rel
