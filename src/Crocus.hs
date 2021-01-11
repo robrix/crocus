@@ -26,7 +26,7 @@ data EntityExpr a
   | V a
 
 newtype Var = Var Word32
-  deriving (Eq, Num, Ord)
+  deriving (Eq, Ord)
 
 instance Show Var where
   showsPrec _ (Var i) = upper (fromIntegral i)
@@ -156,11 +156,11 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ let _A = 0 ; _B = 1 in Rel "org" [_A, _B]
+  [ let _A = Var 0 ; _B = Var 1 in Rel "org" [_A, _B]
     $  rel "report" [V _A, V _B]
-    \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B]
-  , let _A = 0 ; _B = 1 in Rel "teammate" [_A, _B]
-    $  rel "report" [V 2, V _A] /\ rel "report" [V 2, V _B]
+    \/ rel "report" [V _A, V (Var 2)] /\ rel "org" [V (Var 2), V _B]
+  , let _A = Var 0 ; _B = Var 1 in Rel "teammate" [_A, _B]
+    $  rel "report" [V (Var 2), V _A] /\ rel "report" [V (Var 2), V _B]
   ]
 
 
