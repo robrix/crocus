@@ -26,7 +26,7 @@ data EntityExpr a
   = K Entity
   | V a
 
-newtype U = U { getU :: Word32 }
+newtype U = U { getVar :: Word32 }
   deriving (Bounded, Enum, Eq, Num, Ord)
 
 instance Show U where
