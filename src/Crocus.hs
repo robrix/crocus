@@ -159,20 +159,21 @@ facts = oneOfBalanced
   ]
 
 rels :: Has (Scope Var) sig m => m (Rel Var)
-rels = defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
+rels = pure
+  $ defRel "org" $ \ _A _B -> rel "report" [_A, _B] \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
 
 
-class Relation m r v | r -> v where
-  rhs :: r -> m (Expr v)
+class Relation r v | r -> v where
+  rhs :: Has (Scope v) sig m => r -> m (Expr v)
 
-instance Applicative m => Relation m (Expr v) v where
+instance Relation (Expr v) v where
   rhs = pure
 
-instance (Has (Scope v) sig m, Relation m r v) => Relation m (EntityExpr v -> r) v where
+instance Relation r v => Relation (EntityExpr v -> r) v where
   rhs f = bind (rhs . f . V)
 
-defRel :: (Applicative m, Relation m r v) => RelName -> r -> m (Rel v)
-defRel n b = Rel n . Expr <$> rhs b
+defRel :: forall v r . (Enum v, Num v, Relation r v) => RelName -> r -> Rel v
+defRel n b = Rel n $ Expr $ run (runScope (0 :: v) (rhs b))
 
 
 substVar :: Eq a => Env a -> a -> Entity
