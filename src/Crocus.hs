@@ -16,6 +16,7 @@ import           Data.Foldable (find, toList)
 import           Data.Functor.Identity
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
+import           Data.Word
 
 type RelName = String
 
@@ -28,11 +29,11 @@ data EntityExpr a
   = K Entity
   | V a
 
-newtype Var = Var { getVar :: Int }
-  deriving (Enum, Eq, Num, Ord)
+newtype Var = Var { getVar :: Word32 }
+  deriving (Bounded, Enum, Eq, Num, Ord)
 
 instance Show Var where
-  showsPrec _ (Var i) = upper i
+  showsPrec _ (Var i) = upper (fromIntegral i)
     where
     upper = toAlpha ['A'..'Z']
 
@@ -172,8 +173,8 @@ instance Relation (Expr v) v where
 instance Relation r v => Relation (EntityExpr v -> r) v where
   rhs f = bind (rhs . f . V)
 
-defRel :: forall v r . (Enum v, Num v, Relation r v) => RelName -> r -> Rel v
-defRel n b = Rel n $ Expr $ run (runScope (0 :: v) (rhs b))
+defRel :: forall v r . (Enum v, Bounded v, Relation r v) => RelName -> r -> Rel v
+defRel n b = Rel n $ Expr $ run (runScope (minBound :: v) (rhs b))
 
 
 substVar :: Eq a => Env a -> a -> Entity
