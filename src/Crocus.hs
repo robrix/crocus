@@ -26,7 +26,6 @@ data EntityExpr a
   = K Entity
   | V a
 
--- | representation of universally quantified variables
 newtype U = U { getU :: Word32 }
   deriving (Bounded, Enum, Eq, Num, Ord)
 
