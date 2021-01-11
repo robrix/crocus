@@ -391,9 +391,9 @@ newtype ScopeC var m a = ScopeC { runScopeC :: ReaderC var m a }
 
 instance (Enum var, Algebra sig m) => Algebra (Scope var Alg.:+: sig) (ScopeC var m) where
   alg hdl sig ctx = case sig of
-    Alg.L (Bind f) -> do
-      v <- ScopeC ask
-      ScopeC (local (succ @var) (runScopeC (hdl (f v <$ ctx))))
+    Alg.L (Bind f) -> ScopeC $ do
+      v <- ask
+      local (succ @var) (runScopeC (hdl (f v <$ ctx)))
     Alg.R other    -> ScopeC (Alg.alg (runScopeC . hdl) (Alg.R other) ctx)
 
 
