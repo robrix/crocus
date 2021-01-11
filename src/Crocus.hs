@@ -26,7 +26,7 @@ data EntityExpr a
   | V a
 
 newtype Var = Var Word32
-  deriving (Enum, Eq, Num, Ord)
+  deriving (Eq, Num, Ord)
 
 instance Show Var where
   showsPrec _ (Var i) = upper (fromIntegral i)
@@ -40,7 +40,7 @@ toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
   (q, r) = i `divMod` n
 
 incr :: Var -> Var
-incr = succ
+incr (Var i) = Var (i + 1)
 
 
 newtype Expr a = Disj { disj :: NonEmpty (Conj a) }
