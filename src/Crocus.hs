@@ -100,7 +100,7 @@ instance Show a => Show (Entry a) where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel a = Rel RelName (Q a)
+data Rel a = Rel RelName [a] (Expr a)
 
 newtype Closed f = Closed { open :: forall x . f x }
 
@@ -117,26 +117,25 @@ unbind q k = go [] q
     Expr e   -> k (reverse accum) e
 
 
-evalStep :: (Alternative m, Eq var, Has (Scope var) sig m) => m (Rel var) -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative m, Eq var, Monad m) => m (Rel var) -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
-  Rel n q <- rels
-  unbind q $ \ params body -> do
-    u <- matchExpr facts delta body
-    pure $ Fact n (map (substVar u) params)
+  Rel n params body <- rels
+  u <- matchExpr facts delta body
+  pure $ Fact n (map (substVar u) params)
 
-eval :: forall var m sig . (Alternative m, Enum var, Eq var, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> m Fact
+eval :: forall var m sig . (Alternative m, Eq var, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
     let facts' = facts <|> delta
-        delta' = runScope (toEnum 0 :: var) (evalStep (lift rels) (lift facts) (lift delta)) in
+        delta' = evalStep rels facts delta in
     if null delta' then
       facts'
     else
       go facts' delta'
 
 
-query :: (Enum var, Eq var, Alternative m, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> Expr var -> m (Env var)
+query :: (Eq var, Alternative m, Foldable m, Algebra sig m) => m (Rel var) -> m Fact -> Expr var -> m (Env var)
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
@@ -161,11 +160,11 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m (Rel Var)
 rels = oneOfBalanced
-  [ defRel "org" $ \ _A _B
-    -> rel "report" [_A, _B]
-    \/ rel "report" [_A, V 2] /\ rel "org" [V 2, _B]
-  , defRel "teammate" $ \ _A _B
-    -> rel "report" [V 2, _A] /\ rel "report" [V 2, _B]
+  [ let _A = 0 ; _B = 1 in Rel "org" [_A, _B]
+    $  rel "report" [V _A, V _B]
+    \/ rel "report" [V _A, V 2] /\ rel "org" [V 2, V _B]
+  , let _A = 0 ; _B = 1 in Rel "teammate" [_A, _B]
+    $  rel "report" [V 2, V _A] /\ rel "report" [V 2, V _B]
   ]
 
 
@@ -177,9 +176,6 @@ instance Relation (Expr v) v where
 
 instance Relation r v => Relation (EntityExpr v -> r) v where
   rhs f = bind (rhs . f . V)
-
-defRel :: forall v r . (Enum v, Bounded v, Relation r v) => RelName -> r -> Rel v
-defRel n b = Rel n $ Expr $ run (runScope (minBound :: v) (rhs b))
 
 
 substVar :: Eq a => Env a -> a -> Entity
