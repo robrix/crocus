@@ -43,6 +43,11 @@ toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
   n = length alphabet
   (q, r) = i `divMod` n
 
+incr :: Var -> Var
+incr = \case
+  U i -> U (i + 1)
+  X i -> X (i + 1)
+
 
 newtype Expr a = Disj { disj :: NonEmpty (Conj a) }
 
