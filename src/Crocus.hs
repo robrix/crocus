@@ -81,20 +81,6 @@ data Fact = Fact RelName [Entity]
 
 data Rel = Rel RelName [Var] (Expr Var)
 
-newtype Closed f = Closed { open :: forall x . f x }
-
-data Q a
-  = ForAll (a -> Q a)
-  | Expr (Expr a)
-
-
-unbind :: Has (Scope var) sig m => Q var -> ([var] -> Expr var -> m a) -> m a
-unbind q k = go [] q
-  where
-  go accum = \case
-    ForAll f -> bind $ \ v -> go (v:accum) (f v)
-    Expr e   -> k (reverse accum) e
-
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
 evalStep rels facts delta = do
