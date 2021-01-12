@@ -46,16 +46,6 @@ toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
 
 newtype Expr a = Disj { disj :: NonEmpty (Conj a) }
 
-data Exists a
-  = Exists (a -> Exists a)
-  | Body (Conj a)
-
-instance Semigroup (Exists a) where
-  Body a   <> Body b   = Body (a <> b)
-  Exists f <> Exists g = Exists (\ v -> f v <> g v)
-  Exists f <> b        = Exists (\ v -> f v <> b)
-  a        <> Exists g = Exists (\ v -> a   <> g v)
-
 newtype Conj a = Conj { conj :: [Pattern a] }
   deriving (Monoid, Semigroup)
 
@@ -82,9 +72,6 @@ instance Pat (Conj a) a where
 
 instance Pat (Expr a) a where
   rel n e = Disj $ rel n e:|[]
-
-exists :: (EntityExpr a -> Exists a) -> Exists a
-exists f = Exists (f . V)
 
 
 type Env a = [Entry a]
@@ -181,11 +168,6 @@ substVar e n = val . fromJust $ find ((== n) . var) e
 subst :: Eq a => Env a -> Expr a -> Expr a
 subst env = Disj . fmap (substConj env) . disj
 
-substExists :: Eq a => Env a -> Exists a -> Exists a
-substExists env = \case
-  Body c   -> Body (substConj env c)
-  Exists f -> Exists (substExists env . f)
-
 substConj :: Eq a => Env a -> Conj a -> Conj a
 substConj env = Conj . fmap (substPattern env) . conj
 
@@ -216,19 +198,6 @@ matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
 matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
 matchDisj facts = matchConj facts <=< oneOfBalanced . disj
-
-
-matchExists1 :: (Alternative m, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a, Exists a)
-matchExists1 delta = go where
-  go = \case
-    Body c   -> fmap Body <$> matchConj1 delta c
-    Exists f -> bind (go . f) -- FIXME: this needs to reconstruct the binder!
-
-matchExists :: (Alternative m, Eq a, Has (Scope a) sig m) => m Fact -> Exists a -> m (Env a)
-matchExists facts = go where
-  go = \case
-    Body c   -> matchConj facts c
-    Exists f -> bind (go . f)
 
 
 matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj a -> m (Env a, Conj a)
