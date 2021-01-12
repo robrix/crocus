@@ -25,11 +25,15 @@ data EntityExpr a
   = K Entity
   | V a
 
-newtype Var = Var Word32
+data Var
+  = U Word32
+  | X Word32
   deriving (Eq, Ord)
 
 instance Show Var where
-  showsPrec _ (Var i) = upper (fromIntegral i)
+  showsPrec _ = upper . fromIntegral . \case
+    U i -> i
+    X i -> i
     where
     upper = toAlpha ['A'..'Z']
 
@@ -153,11 +157,11 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ let _A = Var 0 ; _B = Var 1 in Rel "org" [_A, _B]
+  [ let _A = U 0 ; _B = U 1 in Rel "org" [_A, _B]
     $  rel "report" [V _A, V _B]
-    \/ rel "report" [V _A, V (Var 2)] /\ rel "org" [V (Var 2), V _B]
-  , let _A = Var 0 ; _B = Var 1 in Rel "teammate" [_A, _B]
-    $  rel "report" [V (Var 2), V _A] /\ rel "report" [V (Var 2), V _B]
+    \/ rel "report" [V _A, V (X 0)] /\ rel "org" [V (X 0), V _B]
+  , let _A = U 0 ; _B = U 1 in Rel "teammate" [_A, _B]
+    $  rel "report" [V (X 0), V _A] /\ rel "report" [V (X 0), V _B]
   ]
 
 
