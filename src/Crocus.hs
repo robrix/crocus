@@ -149,22 +149,29 @@ facts = oneOfBalanced
 
 rels :: Alternative m => m Rel
 rels = oneOfBalanced
-  [ let _A = U 0 ; _B = U 1 in Rel "org" [_A, _B]
-    $  rel "report" [V _A, V _B]
-    \/ rel "report" [V _A, V (X 0)] /\ rel "org" [V (X 0), V _B]
-  , let _A = U 0 ; _B = U 1 in Rel "teammate" [_A, _B]
-    $  rel "report" [V (X 0), V _A] /\ rel "report" [V (X 0), V _B]
+  [ defRel "org" $ \ _A _B
+    -> rel "report" [_A, _B]
+    \/ exists (\ _Z -> rel "report" [_A, _Z] /\ rel "org" [_Z, _B])
+  , defRel "teammate" $ \ _A _B
+    -> exists (\ _Z -> rel "report" [_Z, _A] /\ rel "report" [_Z, _B])
   ]
 
 
+defRel :: Relation r Var => RelName -> r -> Rel
+defRel n = uncurry (Rel n) . rhs incr (U 0) []
+
 class Relation r v | r -> v where
-  rhs :: Has (Scope v) sig m => r -> m (Expr v)
+  rhs :: (v -> v) -> v -> [v] -> r -> ([v], Expr v)
 
 instance Relation (Expr v) v where
-  rhs = pure
+  rhs _ _ vs = (reverse vs,)
 
 instance Relation r v => Relation (EntityExpr v -> r) v where
-  rhs f = bind (rhs . f . V)
+  rhs sv v vs f = rhs sv (sv v) (v:vs) (f (V v))
+
+
+exists :: (EntityExpr Var -> Expr Var) -> Expr Var
+exists = snd . rhs incr (X 0) []
 
 
 substVar :: Eq a => Env a -> a -> Entity
