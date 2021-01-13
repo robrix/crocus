@@ -1,4 +1,4 @@
-{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
@@ -80,6 +80,12 @@ data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
 data Rel = Rel RelName [Var Entity] Expr
+
+data Row f ts where
+  RNil :: Row f '[]
+  (:.) :: f t -> Row f ts -> Row f (t ': ts)
+
+infixr 5 :.
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
