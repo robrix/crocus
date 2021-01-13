@@ -21,9 +21,9 @@ type RelName = String
 
 type Entity = String
 
-data EntityExpr a
+data EntityExpr
   = K Entity
-  | V a
+  | V Var
 
 data Var
   = U Word32
@@ -49,37 +49,37 @@ incr = \case
   X i -> X (i + 1)
 
 
-newtype Expr a = Disj { disj :: NonEmpty (Conj a) }
+newtype Expr = Disj { disj :: NonEmpty Conj }
 
-newtype Conj a = Conj { conj :: [Pattern a] }
+newtype Conj = Conj { conj :: [Pattern] }
   deriving (Monoid, Semigroup)
 
-data Pattern a = Pattern RelName [EntityExpr a]
+data Pattern = Pattern RelName [EntityExpr]
 
 
-(\/) :: Expr a -> Expr a -> Expr a
+(\/) :: Expr -> Expr -> Expr
 Disj e1 \/ Disj e2 = Disj (e1 <> e2)
-(/\) :: Expr a -> Expr a -> Expr a
+(/\) :: Expr -> Expr -> Expr
 Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 
 infixr 6 \/
 infixr 7 /\
 
-rel :: RelName -> [EntityExpr v] -> Expr v
+rel :: RelName -> [EntityExpr] -> Expr
 rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
-type Env a = [Entry a]
-data Entry a = Entry { var :: a, val :: Entity }
+type Env = [Entry]
+data Entry = Entry { var :: Var, val :: Entity }
 
-instance Show a => Show (Entry a) where
+instance Show Entry where
   showsPrec d (Entry var val) = showParen (d > 0) $ shows var . showString " : " . shows val
 
 
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName [Var] (Expr Var)
+data Rel = Rel RelName [Var] Expr
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
@@ -100,7 +100,7 @@ eval rels facts = go empty facts
       go facts' delta'
 
 
-query :: (Eq var, Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr var -> m (Env var)
+query :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr -> m Env
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
@@ -133,40 +133,40 @@ rels = oneOfBalanced
   ]
 
 
-defRel :: Relation r Var => RelName -> r -> Rel
-defRel n = uncurry (Rel n) . rhs incr (U 0) []
+defRel :: Relation r => RelName -> r -> Rel
+defRel n = uncurry (Rel n) . rhs (U 0) []
 
-class Relation r v | r -> v where
-  rhs :: (v -> v) -> v -> [v] -> r -> ([v], Expr v)
+class Relation r where
+  rhs :: Var -> [Var] -> r -> ([Var], Expr)
 
-instance Relation (Expr v) v where
-  rhs _ _ vs = (reverse vs,)
+instance Relation Expr where
+  rhs _ vs = (reverse vs,)
 
-instance Relation r v => Relation (EntityExpr v -> r) v where
-  rhs sv v vs f = rhs sv (sv v) (v:vs) (f (V v))
-
-
-exists :: (EntityExpr Var -> Expr Var) -> Expr Var
-exists = snd . rhs incr (X 0) []
+instance Relation r => Relation (EntityExpr -> r) where
+  rhs v vs f = rhs (incr v) (v:vs) (f (V v))
 
 
-substVar :: Eq a => Env a -> a -> Entity
+exists :: (EntityExpr -> Expr) -> Expr
+exists = snd . rhs (X 0) []
+
+
+substVar :: Env -> Var -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
 
-subst :: Eq a => Env a -> Expr a -> Expr a
+subst :: Env -> Expr -> Expr
 subst env = Disj . fmap (substConj env) . disj
 
-substConj :: Eq a => Env a -> Conj a -> Conj a
+substConj :: Env -> Conj -> Conj
 substConj env = Conj . fmap (substPattern env) . conj
 
-substPattern :: Eq a => Env a -> Pattern a -> Pattern a
+substPattern :: Env -> Pattern -> Pattern
 substPattern env (Pattern n e) = Pattern n (map go e)
   where
   go = \case
     K a -> K a
     V n -> maybe (V n) (K . val) (find ((== n) . var) env)
 
-matchExpr :: (Alternative m, Eq a, Monad m) => m Fact -> m Fact -> Expr a -> m (Env a)
+matchExpr :: (Alternative m, Monad m) => m Fact -> m Fact -> Expr -> m Env
 matchExpr facts delta expr = do
   (u, conj') <- matchDisj1 delta expr
   u' <- matchConj (facts <|> delta) (substConj u conj')
@@ -181,20 +181,20 @@ quotient (x:xs) = go [] x xs where
     x':xs' -> (x, reverse accum ++ x' : xs') : go (x : accum) x' xs'
 
 
-matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr a -> m (Env a, Conj a)
+matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env, Conj)
 matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
 
-matchDisj :: (Alternative m, Eq a, Monad m) => m Fact -> Expr a -> m (Env a)
+matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
 matchDisj facts = matchConj facts <=< oneOfBalanced . disj
 
 
-matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj a -> m (Env a, Conj a)
+matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env, Conj)
 matchConj1 delta (Conj conj) = do
   (p, rest) <- oneOfBalanced $ quotient conj
   u <- matchPattern delta p
   pure (u, Conj rest)
 
-matchConj :: (Alternative m, Eq a, Monad m) => m Fact -> Conj a -> m (Env a)
+matchConj :: (Alternative m, Monad m) => m Fact -> Conj -> m Env
 matchConj facts = go where
   go = \case
     Conj []  -> pure []
@@ -203,13 +203,13 @@ matchConj facts = go where
       ut <- go (substConj uh (Conj t))
       pure $ uh <> ut
 
-matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern a -> m (Env a)
+matchPattern :: (Alternative m, Monad m) => m Fact -> Pattern -> m Env
 matchPattern facts (Pattern n e) = do
   Fact n' e' <- facts
   guard (n == n')
   maybe empty pure (go e e')
   where
-  go :: [EntityExpr a] -> [Entity] -> Maybe (Env a)
+  go :: [EntityExpr] -> [Entity] -> Maybe Env
   go = curry $ \case
     ([], [])         -> Just []
     (K a:as, a':as') -> guard (a == a') *> go as as'
