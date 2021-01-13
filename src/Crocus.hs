@@ -23,14 +23,14 @@ type Entity = String
 
 data EntityExpr
   = K Entity
-  | V Var
+  | V (Var Entity)
 
-data Var
+data Var a
   = U Word32
   | X Word32
   deriving (Eq, Ord)
 
-instance Show Var where
+instance Show (Var a) where
   showsPrec _ = upper . fromIntegral . \case
     U i -> i
     X i -> i
@@ -43,7 +43,7 @@ toAlpha alphabet i = (alphabet !! r :) . if q > 0 then shows q else id
   n = length alphabet
   (q, r) = i `divMod` n
 
-incr :: Var -> Var
+incr :: Var a -> Var a
 incr = \case
   U i -> U (i + 1)
   X i -> X (i + 1)
@@ -70,7 +70,7 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 type Env = [Entry]
-data Entry = Entry { var :: Var, val :: Entity }
+data Entry = Entry { var :: Var Entity, val :: Entity }
 
 instance Show Entry where
   showsPrec d (Entry var val) = showParen (d > 0) $ shows var . showString " : " . shows val
@@ -79,7 +79,7 @@ instance Show Entry where
 data Fact = Fact RelName [Entity]
   deriving (Eq, Ord, Show)
 
-data Rel = Rel RelName [Var] Expr
+data Rel = Rel RelName [Var Entity] Expr
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
@@ -137,7 +137,7 @@ defRel :: Relation r => RelName -> r -> Rel
 defRel n = uncurry (Rel n) . rhs (U 0) []
 
 class Relation r where
-  rhs :: Var -> [Var] -> r -> ([Var], Expr)
+  rhs :: Var Entity -> [Var Entity] -> r -> ([Var Entity], Expr)
 
 instance Relation Expr where
   rhs _ vs = (reverse vs,)
@@ -150,7 +150,7 @@ exists :: (EntityExpr -> Expr) -> Expr
 exists = snd . rhs (X 0) []
 
 
-substVar :: Env -> Var -> Entity
+substVar :: Env -> Var Entity -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
 
 subst :: Env -> Expr -> Expr
