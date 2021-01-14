@@ -106,7 +106,7 @@ eval rels facts = go empty facts
       go facts' delta'
 
 
-query :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> Expr -> m Env
+query :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> Expr -> m Env
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
