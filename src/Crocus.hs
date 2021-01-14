@@ -94,7 +94,7 @@ evalStep rels facts delta = do
   u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
 
-eval :: (Alternative m, Foldable m, Algebra sig m) => m Rel -> m Fact -> m Fact
+eval :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> m Fact
 eval rels facts = go empty facts
   where
   go facts delta =
