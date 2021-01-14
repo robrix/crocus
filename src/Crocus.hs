@@ -1,6 +1,9 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Crocus
@@ -13,6 +16,8 @@ import           Control.Carrier.Reader
 import           Control.Monad ((<=<))
 import           Control.Monad.Trans.Class
 import           Data.Foldable (find, toList)
+import           Data.Functor.Identity
+import           Data.Kind (Constraint)
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
 import           Data.Word
@@ -70,7 +75,9 @@ rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
 type Env = [Entry]
+type Env' ts = Row Entry'
 data Entry = Entry { var :: Var Entity, val :: Entity }
+data Entry' a = Entry' { var' :: Var a, val' :: a }
 
 instance Show Entry where
   showsPrec d (Entry var val) = showParen (d > 0) $ shows var . showString " : " . shows val
@@ -81,11 +88,24 @@ data Fact = Fact RelName [Entity]
 
 data Rel = Rel RelName [Var Entity] Expr
 
+data Fact' ts = Fact' RelName (Row Identity ts)
+  deriving (Eq, Ord, Show)
+
+data Rel' ts t = Rel' RelName (Row Var ts) Expr
+
 data Row f ts where
   RNil :: Row f '[]
   (:.) :: f t -> Row f ts -> Row f (t ': ts)
 
 infixr 5 :.
+
+deriving instance (All Eq ts, forall t . Eq t => Eq (f t)) => Eq (Row f ts)
+deriving instance (All Eq ts, All Ord ts, forall t . Eq t => Eq (f t), forall t . Ord t => Ord (f t)) => Ord (Row f ts)
+deriving instance (All Show ts, forall t . Show t => Show (f t)) => Show (Row f ts)
+
+type family All c ts :: Constraint where
+  All _ '[]       = ()
+  All c (t ': ts) = (c t, All c ts)
 
 
 evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
