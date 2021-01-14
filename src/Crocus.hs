@@ -88,6 +88,11 @@ data Row f ts where
 infixr 5 :.
 
 
+data DB t = DB
+  { relations :: t Rel
+  , facts     :: t Fact
+  }
+
 evalStep :: (Alternative t, Monad t) => t Rel -> t Fact -> t Fact -> t Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
@@ -112,8 +117,8 @@ query rels facts = matchDisj derived
   derived = eval rels facts
 
 
-facts :: Alternative m => m Fact
-facts = oneOfBalanced
+facts' :: Alternative m => m Fact
+facts' = oneOfBalanced
   [ Fact "report" ["doug", "ayman"]
   , Fact "report" ["doug", "beka"]
   , Fact "report" ["doug", "max"]
