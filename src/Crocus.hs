@@ -88,13 +88,13 @@ data Row f ts where
 infixr 5 :.
 
 
-evalStep :: (Alternative m, Monad m) => m Rel -> m Fact -> m Fact -> m Fact
+evalStep :: (Alternative t, Monad t) => t Rel -> t Fact -> t Fact -> t Fact
 evalStep rels facts delta = do
   Rel n params body <- rels
   u <- matchExpr facts delta body
   pure $ Fact n (map (substVar u) params)
 
-eval :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> m Fact
+eval :: (Alternative t, Foldable t, Monad t) => t Rel -> t Fact -> t Fact
 eval rels facts = go empty facts
   where
   go facts delta =
@@ -106,7 +106,7 @@ eval rels facts = go empty facts
       go facts' delta'
 
 
-query :: (Alternative m, Foldable m, Monad m) => m Rel -> m Fact -> Expr -> m Env
+query :: (Alternative t, Foldable t, Monad t) => t Rel -> t Fact -> Expr -> t Env
 query rels facts = matchDisj derived
   where
   derived = eval rels facts
