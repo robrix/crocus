@@ -93,28 +93,28 @@ data DB t = DB
   , facts     :: t Fact
   }
 
-evalStep :: (Alternative t, Monad t) => t Rel -> t Fact -> t Fact -> t Fact
-evalStep rels facts delta = do
+evalStep :: (Alternative t, Monad t) => DB t -> t Fact -> t Fact
+evalStep db delta = do
   Rel n params body <- rels
-  u <- matchExpr facts delta body
+  u <- matchExpr (facts db) delta body
   pure $ Fact n (map (substVar u) params)
 
-eval :: (Alternative t, Foldable t, Monad t) => t Rel -> t Fact -> t Fact
-eval rels facts = go empty facts
+eval :: (Alternative t, Foldable t, Monad t) => DB t -> t Fact
+eval (DB rels facts) = go empty facts
   where
   go facts delta =
     let facts' = facts <|> delta
-        delta' = evalStep rels facts delta in
+        delta' = evalStep (DB rels facts) delta in
     if null delta' then
       facts'
     else
       go facts' delta'
 
 
-query :: (Alternative t, Foldable t, Monad t) => t Rel -> t Fact -> Expr -> t Env
-query rels facts = matchDisj derived
+query :: (Alternative t, Foldable t, Monad t) => DB t -> Expr -> t Env
+query db = matchDisj derived
   where
-  derived = eval rels facts
+  derived = eval db
 
 
 facts' :: Alternative m => m Fact
