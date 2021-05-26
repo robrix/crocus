@@ -266,9 +266,10 @@ oneOfBalanced as = go (length as) (toList as)
   go n = \case
     []  -> empty
     [a] -> pure a
-    as  -> go half (take half as) <|> go (n - half) (drop half as)
+    as  -> go half ls <|> go (n - half) rs
       where
       half = n `div` 2
+      (ls, rs) = splitAt half as
 
 
 bind :: Has (Scope var) sig m => (var -> m a) -> m a
