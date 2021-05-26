@@ -48,7 +48,7 @@ incr = \case
   X i -> X (i + 1)
 
 
-newtype Expr = Disj { disj :: NonEmpty Conj }
+newtype Expr = Disj { disjuncts :: NonEmpty Conj }
 
 newtype Conj = Conj { conj :: [Pattern] }
   deriving (Monoid, Semigroup)
@@ -164,7 +164,7 @@ substVar :: Env -> Var Entity -> Entity
 substVar e n = val . fromJust $ find ((== n) . var) e
 
 subst :: Env -> Expr -> Expr
-subst env = Disj . fmap (substConj env) . disj
+subst env = Disj . fmap (substConj env) . disjuncts
 
 substConj :: Env -> Conj -> Conj
 substConj env = Conj . fmap (substPattern env) . conj
@@ -192,10 +192,10 @@ quotient (x:xs) = go [] x xs where
 
 
 matchDisj1 :: (Alternative m, Monad m) => m Fact -> Expr -> m (Env, Conj)
-matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disj
+matchDisj1 delta = matchConj1 delta <=< oneOfBalanced . disjuncts
 
 matchDisj :: (Alternative m, Monad m) => m Fact -> Expr -> m Env
-matchDisj facts = matchConj facts <=< oneOfBalanced . disj
+matchDisj facts = matchConj facts <=< oneOfBalanced . disjuncts
 
 
 matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env, Conj)
