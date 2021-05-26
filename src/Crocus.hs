@@ -50,7 +50,7 @@ incr = \case
 
 newtype Expr = Disj { disjuncts :: NonEmpty Conj }
 
-newtype Conj = Conj { conj :: [Pattern] }
+newtype Conj = Conj { conjuncts :: [Pattern] }
   deriving (Monoid, Semigroup)
 
 data Pattern = Pattern RelName [EntityExpr]
@@ -167,7 +167,7 @@ subst :: Env -> Expr -> Expr
 subst env = Disj . fmap (substConj env) . disjuncts
 
 substConj :: Env -> Conj -> Conj
-substConj env = Conj . fmap (substPattern env) . conj
+substConj env = Conj . fmap (substPattern env) . conjuncts
 
 substPattern :: Env -> Pattern -> Pattern
 substPattern env (Pattern n e) = Pattern n (map go e)
@@ -178,8 +178,8 @@ substPattern env (Pattern n e) = Pattern n (map go e)
 
 matchExpr :: (Alternative m, Monad m) => m Fact -> m Fact -> Expr -> m Env
 matchExpr facts delta expr = do
-  (u, conj') <- matchDisj1 delta expr
-  u' <- matchConj (facts <|> delta) (substConj u conj')
+  (u, conjuncts') <- matchDisj1 delta expr
+  u' <- matchConj (facts <|> delta) (substConj u conjuncts')
   pure $ u <> u'
 
 
@@ -199,8 +199,8 @@ matchDisj facts = matchConj facts <=< oneOfBalanced . disjuncts
 
 
 matchConj1 :: (Alternative m, Monad m) => m Fact -> Conj -> m (Env, Conj)
-matchConj1 delta (Conj conj) = do
-  (p, rest) <- oneOfBalanced $ quotient conj
+matchConj1 delta (Conj conjuncts) = do
+  (p, rest) <- oneOfBalanced $ quotient conjuncts
   u <- matchPattern delta p
   pure (u, Conj rest)
 
