@@ -20,9 +20,9 @@ type RelName = String
 
 type Entity = String
 
-data EntityExpr
-  = K Entity
-  | V (Var Entity)
+data EntityExpr a
+  = K a
+  | V (Var a)
 
 data Var a
   = U Word
@@ -53,7 +53,7 @@ newtype Expr = Disj { disjuncts :: NonEmpty Conj }
 newtype Conj = Conj { conjuncts :: [Pattern] }
   deriving (Monoid, Semigroup)
 
-data Pattern = Pattern RelName [EntityExpr]
+data Pattern = Pattern RelName [EntityExpr Entity]
 
 
 (\/) :: Expr -> Expr -> Expr
@@ -64,7 +64,7 @@ Disj e1 /\ Disj e2 = Disj $ (<>) <$> e1 <*> e2
 infixr 6 \/
 infixr 7 /\
 
-rel :: RelName -> [EntityExpr] -> Expr
+rel :: RelName -> [EntityExpr Entity] -> Expr
 rel n e = Disj $ Conj [Pattern n e]:|[]
 
 
@@ -152,11 +152,11 @@ class Relation r where
 instance Relation Expr where
   rhs _ vs = (reverse vs,)
 
-instance Relation r => Relation (EntityExpr -> r) where
+instance Relation r => Relation (EntityExpr Entity -> r) where
   rhs v vs f = rhs (incr v) (v:vs) (f (V v))
 
 
-exists :: (EntityExpr -> Expr) -> Expr
+exists :: (EntityExpr Entity -> Expr) -> Expr
 exists = snd . rhs (X 0) []
 
 
@@ -219,7 +219,7 @@ matchPattern facts (Pattern n e) = do
   guard (n == n')
   maybe empty pure (go e e')
   where
-  go :: [EntityExpr] -> [Entity] -> Maybe Env
+  go :: [EntityExpr Entity] -> [Entity] -> Maybe Env
   go = curry $ \case
     ([], [])         -> Just []
     (K a:as, a':as') -> guard (a == a') *> go as as'
