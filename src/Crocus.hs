@@ -15,7 +15,6 @@ import           Control.Monad.Trans.Class
 import           Data.Foldable (find, toList)
 import           Data.List.NonEmpty (NonEmpty(..))
 import           Data.Maybe (fromJust)
-import           Data.Word
 
 type RelName = String
 
@@ -26,8 +25,8 @@ data EntityExpr
   | V (Var Entity)
 
 data Var a
-  = U Word32
-  | X Word32
+  = U Word
+  | X Word
   deriving (Eq, Ord)
 
 instance Show (Var a) where
